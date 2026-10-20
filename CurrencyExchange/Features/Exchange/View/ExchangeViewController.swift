@@ -9,6 +9,8 @@ import UIKit
 
 final class ExchangeViewController: UIViewController {
     
+    private let viewModel = ExchangeViewModel()
+    
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.text = "Exchange calculator"
@@ -56,6 +58,41 @@ final class ExchangeViewController: UIViewController {
         configureUI()
         setupConstraints()
         setupActions()
+        bindViewModel()
+    }
+    
+    private func bindViewModel() {
+        viewModel.onStateChange = { [weak self] state in
+            DispatchQueue.main.async {
+                self?.render(state: state)
+            }
+        }
+        
+        render(state: viewModel.state)
+    }
+    
+    private func render(state: ExchangeViewState) {
+        rateLabel.text = state.rateDescription
+        
+        sourceCard.configure(
+            currency: state.selectedFromCurrency,
+            amount: sourceCard.amountTextField.isFirstResponder
+                ? sourceCard.amountTextField.text ?? ""
+                : format(state.inputAmount)
+        )
+        
+        targetCard.configure(
+            currency: state.selectedToCurrency,
+            amount: format(state.convertedAmount)
+        )
+    }
+    
+    private func format(_ amount: Decimal) -> String {
+        amount.formatted(
+            .number
+                .grouping(.automatic)
+                .precision(.fractionLength(2))
+        )
     }
     
     private func configureUI() {
@@ -78,9 +115,6 @@ final class ExchangeViewController: UIViewController {
             $0.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview($0)
         }
-        
-        sourceCard.amountTextField.text = "$9.999"
-        targetCard.amountTextField.text = "$184,065"
     }
     
     private func setupConstraints() {
@@ -155,11 +189,13 @@ final class ExchangeViewController: UIViewController {
     }
     
     @objc private func amountChanged() {
-        
+        viewModel.updateAmount(
+            sourceCard.amountTextField.text ?? ""
+        )
     }
     
     @objc private func swapCurrencies() {
-        
+        viewModel.swapCurrencies()
     }
 }
 
