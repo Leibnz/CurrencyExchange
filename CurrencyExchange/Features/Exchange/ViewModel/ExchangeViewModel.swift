@@ -7,7 +7,10 @@
 
 import Foundation
 
+@MainActor
 final class ExchangeViewModel {
+    
+    private let repository: ExchangeRatesRepository
     
     private(set) var state: ExchangeViewState = .initial {
         didSet {
@@ -16,6 +19,34 @@ final class ExchangeViewModel {
     }
     
     var onStateChange: ((ExchangeViewState) -> Void)?
+    
+    init(repository: ExchangeRatesRepository) {
+        self.repository = repository
+    }
+    
+    func loadRate() async {
+        do {
+            let rate = try await repository.getRate(
+                from: state.selectedFromCurrency,
+                to: state.selectedToCurrency
+            )
+            
+            var updatedState = state
+            
+            guard rate.fromCurrency == updatedState.selectedFromCurrency,
+                  rate.toCurrency == updatedState.selectedToCurrency else {
+                return
+            }
+            
+            updatedState.exchangeRate = rate
+            updatedState.convertedAmount = rate.convert(updatedState.inputAmount)
+            
+            state = updatedState
+            
+        } catch {
+            print("Failed to load exchange rate: \(error)")
+        }
+    }
     
     // MARK: - Update Amount
     
@@ -42,24 +73,29 @@ final class ExchangeViewModel {
     
     // MARK: - Swap Currencies
     
-    func swapCurrencies() {
-        
+    func swapCurrencies() async {
         var updatedState = state
         
-        let previousConvertedAmount = updatedState.convertedAmount
+        let previousFrom = updatedState.selectedFromCurrency
+        updatedState.selectedFromCurrency = updatedState.selectedToCurrency
+        updatedState.selectedToCurrency = previousFrom
         
-        updatedState.exchangeRate = updatedState.exchangeRate.reversed
+        updatedState.inputAmount = state.convertedAmount
         
-        updatedState.selectedFromCurrency = updatedState.exchangeRate.fromCurrency
-        
-        updatedState.selectedToCurrency = updatedState.exchangeRate.toCurrency
-        
-        updatedState.inputAmount = previousConvertedAmount
-        
-        updatedState.convertedAmount = updatedState.exchangeRate.convert(
-            previousConvertedAmount
-        )
-        
-        state = updatedState
+        do {
+            let rate = try await repository.getRate(
+                from: updatedState.selectedFromCurrency,
+                to: updatedState.selectedToCurrency
+            )
+            
+            updatedState.exchangeRate = rate
+            updatedState.convertedAmount = rate.convert(
+                updatedState.inputAmount
+            )
+            
+            state = updatedState
+        } catch {
+            print("Swap failed: \(error)")
+        }
     }
 }

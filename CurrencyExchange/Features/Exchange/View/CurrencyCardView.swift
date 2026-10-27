@@ -64,10 +64,7 @@ final class CurrencyCardView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func configure(
-        currency: Currency,
-        amount: String
-    ) {
+    func configure(currency: Currency, amount: String) {
         flagLabel.text = currency.flag
         currencyLabel.text = currency.code
         amountTextField.text = amount

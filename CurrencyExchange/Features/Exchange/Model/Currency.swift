@@ -28,3 +28,20 @@ extension Currency {
         flag: "🇲🇽"
     )
 }
+
+extension Currency {
+    
+    static let ars = Currency(
+        code: "ARS",
+        name: "Argentine Peso",
+        flag: "🇦🇷"
+    )
+    
+    // TODO: Replace with /tickers-currencies API
+    // when the endpoint becomes available.
+    static let supported: [Currency] = [
+        .usdc,
+        .mxn,
+        .ars
+    ]
+}
