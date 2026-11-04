@@ -7,7 +7,14 @@
 
 import Foundation
 
+enum ExchangeActiveField: Equatable {
+    case source
+    case target
+}
+
 struct ExchangeViewState: Equatable {
+    var activeField: ExchangeActiveField = .source
+    
     var selectedFromCurrency: Currency
     var selectedToCurrency: Currency
     

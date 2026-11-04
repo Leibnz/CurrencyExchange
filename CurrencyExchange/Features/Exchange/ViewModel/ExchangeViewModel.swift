@@ -39,7 +39,14 @@ final class ExchangeViewModel {
             }
             
             updatedState.exchangeRate = rate
-            updatedState.convertedAmount = rate.convert(updatedState.inputAmount)
+            
+            switch updatedState.activeField {
+            case .source:
+                updatedState.convertedAmount = rate.convert(updatedState.inputAmount)
+            
+            case .target:
+                updatedState.inputAmount = updatedState.convertedAmount / rate.value
+            }
             
             state = updatedState
             
@@ -50,23 +57,45 @@ final class ExchangeViewModel {
     
     // MARK: - Update Amount
     
-    func updateAmount(_ text: String) {
+    func updateAmount(_ text: String, from field: ExchangeActiveField) {
         let normalizedText = text.replacingOccurrences(
             of: ",",
             with: "."
         )
         
-        guard let amount = Decimal(
-            string: normalizedText,
-            locale: Locale(identifier: "en_US_POSIX")
-        ), amount >= 0 else {
+        var updatedState = state
+        updatedState.activeField = field
+        
+        let amount: Decimal
+        
+        if normalizedText.isEmpty {
+            amount = 0
+        } else {
+            guard let parsedAmount = Decimal(
+                string: normalizedText,
+                locale: Locale(identifier: "en_US_POSIX")
+            ), parsedAmount >= 0 else {
+                return
+            }
+            
+            amount = parsedAmount
+        }
+        
+        let rate = updatedState.exchangeRate.value
+        
+        guard rate > 0 else {
             return
         }
         
-        var updatedState = state
-        
-        updatedState.inputAmount = amount
-        updatedState.convertedAmount = updatedState.exchangeRate.convert(amount)
+        switch field {
+        case .source:
+            updatedState.inputAmount = amount
+            updatedState.convertedAmount = amount * rate
+            
+        case .target:
+            updatedState.convertedAmount = amount
+            updatedState.inputAmount = amount / rate
+        }
         
         state = updatedState
     }
@@ -97,5 +126,16 @@ final class ExchangeViewModel {
         } catch {
             print("Swap failed: \(error)")
         }
+    }
+    
+    // MARK: - ActiveField
+    func setActiveField(_ field: ExchangeActiveField) {
+        guard state.activeField != field else {
+            return
+        }
+        
+        var updatedState = state
+        updatedState.activeField = field
+        state = updatedState
     }
 }

@@ -67,7 +67,10 @@ final class CurrencyCardView: UIView {
     func configure(currency: Currency, amount: String) {
         flagLabel.text = currency.flag
         currencyLabel.text = currency.code
-        amountTextField.text = amount
+        
+        if amountTextField.text != amount {
+            amountTextField.text = amount
+        }
     }
     
     private func configureUI() {
