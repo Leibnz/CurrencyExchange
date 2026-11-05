@@ -74,7 +74,45 @@ final class ExchangeViewController: UIViewController {
         setupActions()
         bindViewModel()
     }
-      
+    
+    private func presentCurrencySelection(for field: CurrencySelectionField) {
+        let selectedCurrency: Currency
+
+        switch field {
+        case .source:
+            selectedCurrency = viewModel.state.selectedFromCurrency
+
+        case .target:
+            selectedCurrency = viewModel.state.selectedToCurrency
+        }
+
+        let controller = CurrencySelectionViewController(
+            currencies: Currency.supported,
+            selectedCurrency: selectedCurrency
+        )
+
+        controller.onCurrencySelected = { [weak self] currency in
+            guard let self else { return }
+
+            Task {
+                await self.viewModel.selectCurrency(
+                    currency,
+                    for: field
+                )
+            }
+        }
+
+        controller.modalPresentationStyle = .pageSheet
+
+        if let sheet = controller.sheetPresentationController {
+            sheet.detents = [.medium(), .large()]
+            sheet.prefersGrabberVisible = false
+            sheet.preferredCornerRadius = 20
+        }
+
+        present(controller, animated: true)
+    }
+    
     private func bindViewModel() {
         viewModel.onStateChange = { [weak self] state in
             DispatchQueue.main.async {
@@ -231,6 +269,14 @@ final class ExchangeViewController: UIViewController {
             action: #selector(swapCurrencies),
             for: .touchUpInside
         )
+        
+        sourceCard.onCurrencyTap = { [weak self] in
+            self?.presentCurrencySelection(for: .source)
+        }
+        
+        targetCard.onCurrencyTap = { [weak self] in
+            self?.presentCurrencySelection(for: .target)
+        }
     }
     
     @objc private func sourceEditingBegan() {

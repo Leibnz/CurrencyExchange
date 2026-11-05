@@ -12,6 +12,8 @@ final class ExchangeViewModel {
     
     private let repository: ExchangeRatesRepository
     
+    private var currencyRequestID = 0
+    
     private(set) var state: ExchangeViewState = .initial {
         didSet {
             onStateChange?(state)
@@ -33,10 +35,9 @@ final class ExchangeViewModel {
             
             var updatedState = state
             
-            guard rate.fromCurrency == updatedState.selectedFromCurrency,
-                  rate.toCurrency == updatedState.selectedToCurrency else {
-                return
-            }
+            guard rate.value > 0,
+                  rate.fromCurrency == updatedState.selectedFromCurrency,
+                  rate.toCurrency == updatedState.selectedToCurrency else { return }
             
             updatedState.exchangeRate = rate
             
@@ -52,6 +53,54 @@ final class ExchangeViewModel {
             
         } catch {
             print("Failed to load exchange rate: \(error)")
+        }
+    }
+    
+    func selectCurrency(_ currency: Currency, for field: CurrencySelectionField) async {
+        var newFrom = state.selectedFromCurrency
+        var newTo = state.selectedToCurrency
+        
+        switch field {
+        case .source:
+            newFrom = currency
+        
+        case .target:
+            newTo = currency
+        }
+        
+        guard newFrom != state.selectedFromCurrency || newTo != state.selectedToCurrency else { return }
+        
+        currencyRequestID += 1
+        let requestID = currencyRequestID
+        
+        do {
+            let rate = try await repository.getRate(from: newFrom, to: newTo)
+            
+            guard requestID == currencyRequestID,
+                  rate.value > 0,
+                  rate.fromCurrency == newFrom,
+                  rate.toCurrency == newTo
+                    else { return }
+            
+            var updatedState = state
+            
+            updatedState.selectedFromCurrency = newFrom
+            updatedState.selectedToCurrency = newTo
+            updatedState.exchangeRate = rate
+            
+            switch updatedState.activeField {
+            case .source:
+                updatedState.convertedAmount = updatedState.inputAmount * rate.value
+                
+            case .target:
+                updatedState.inputAmount = updatedState.convertedAmount / rate.value
+            }
+            
+            state = updatedState
+        } catch {
+            guard requestID == currencyRequestID else { return }
+            
+            print("Currency selection failed: \(error)")
         }
     }
     
@@ -103,27 +152,53 @@ final class ExchangeViewModel {
     // MARK: - Swap Currencies
     
     func swapCurrencies() async {
-        var updatedState = state
-        
-        let previousFrom = updatedState.selectedFromCurrency
-        updatedState.selectedFromCurrency = updatedState.selectedToCurrency
-        updatedState.selectedToCurrency = previousFrom
-        
-        updatedState.inputAmount = state.convertedAmount
-        
+        let newFrom = state.selectedToCurrency
+        let newTo = state.selectedFromCurrency
+
+        currencyRequestID += 1
+        let requestID = currencyRequestID
+
         do {
             let rate = try await repository.getRate(
-                from: updatedState.selectedFromCurrency,
-                to: updatedState.selectedToCurrency
+                from: newFrom,
+                to: newTo
             )
-            
+
+            guard requestID == currencyRequestID,
+                  rate.value > 0,
+                  rate.fromCurrency == newFrom,
+                  rate.toCurrency == newTo else {
+                return
+            }
+
+            var updatedState = state
+
+            updatedState.selectedFromCurrency = newFrom
+            updatedState.selectedToCurrency = newTo
             updatedState.exchangeRate = rate
-            updatedState.convertedAmount = rate.convert(
-                updatedState.inputAmount
-            )
-            
+
+            let previousSourceAmount = state.inputAmount
+            let previousTargetAmount = state.convertedAmount
+
+            switch updatedState.activeField {
+            case .source:
+                updatedState.inputAmount = previousTargetAmount
+                updatedState.convertedAmount =
+                    previousTargetAmount * rate.value
+
+            case .target:
+                updatedState.convertedAmount = previousSourceAmount
+                updatedState.inputAmount =
+                    previousSourceAmount / rate.value
+            }
+
             state = updatedState
+
         } catch {
+            guard requestID == currencyRequestID else {
+                return
+            }
+
             print("Swap failed: \(error)")
         }
     }
