@@ -21,6 +21,22 @@ final class ExchangeViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    private let loadingIndicator: UIActivityIndicatorView = {
+        let indicator = UIActivityIndicatorView(style: .medium)
+        indicator.color = .systemGreen
+        indicator.hidesWhenStopped = true
+        return indicator
+    }()
+    
+    private let statusLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 12)
+        label.textColor = .secondaryLabel
+        label.numberOfLines = 0
+        label.isHidden = true
+        return label
+    }()
+    
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.text = "Exchange calculator"
@@ -65,14 +81,52 @@ final class ExchangeViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        Task {
-            await viewModel.loadRate()
-        }
-        
         configureUI()
         setupConstraints()
         setupActions()
         bindViewModel()
+        
+        Task { [weak self] in
+            await self?.viewModel.loadRate()
+        }
+    }
+    
+    private func renderLoadingState(_ state: ExchangeViewState) {
+        let isLoading = state.loadingState == .loading
+
+        if isLoading {
+            loadingIndicator.startAnimating()
+        } else {
+            loadingIndicator.stopAnimating()
+        }
+
+        swapButton.isEnabled = !isLoading
+
+        sourceCard.isCurrencySelectionEnabled = !isLoading
+        targetCard.isCurrencySelectionEnabled = !isLoading
+    }
+    
+    private func renderRateStatus(_ state: ExchangeViewState) {
+        switch state.rateSource {
+        case .live:
+            statusLabel.isHidden = true
+        
+        case .cached:
+            statusLabel.text = "Using last available rate"
+            statusLabel.isHidden = false
+        
+        case .fallback:
+            statusLabel.text = "Using backup rate · May be outdated"
+            statusLabel.isHidden = false
+            
+        case .identity:
+            statusLabel.isHidden = false
+        }
+        
+        if let errorMessage = state.errorMessage {
+            statusLabel.text = errorMessage
+            statusLabel.isHidden = false
+        }
     }
     
     private func presentCurrencySelection(for field: CurrencySelectionField) {
@@ -115,16 +169,17 @@ final class ExchangeViewController: UIViewController {
     
     private func bindViewModel() {
         viewModel.onStateChange = { [weak self] state in
-            DispatchQueue.main.async {
-                self?.render(state: state)
-            }
+            self?.render(state: state)
         }
         
         render(state: viewModel.state)
     }
     
-    private func render(state: ExchangeViewState, forceUpdate: Bool = false) {
+    private func render(state: ExchangeViewState) {
         rateLabel.text = state.rateDescription
+        
+        renderLoadingState(state)
+        renderRateStatus(state)
         
         let currenciesChanged: Bool
         
@@ -162,7 +217,7 @@ final class ExchangeViewController: UIViewController {
         amount.formatted(
             .number
                 .grouping(.automatic)
-                .precision(.fractionLength(2))
+                .precision(.fractionLength(4))
         )
     }
     
@@ -177,6 +232,8 @@ final class ExchangeViewController: UIViewController {
         swapButton.layer.borderColor = view.backgroundColor?.cgColor
         
         [
+            loadingIndicator,
+            statusLabel,
             titleLabel,
             rateLabel,
             sourceCard,
@@ -198,6 +255,24 @@ final class ExchangeViewController: UIViewController {
                 equalTo: view.safeAreaLayoutGuide.leadingAnchor,
                 constant: 16
             ),
+            loadingIndicator.leadingAnchor.constraint(
+                equalTo: rateLabel.trailingAnchor,
+                constant: 8
+            ),
+            loadingIndicator.centerYAnchor.constraint(
+                equalTo: rateLabel.centerYAnchor
+            ),
+            statusLabel.topAnchor.constraint(
+                equalTo: rateLabel.bottomAnchor,
+                constant: 4
+            ),
+            statusLabel.leadingAnchor.constraint(
+                equalTo: rateLabel.leadingAnchor
+            ),
+            statusLabel.trailingAnchor.constraint(
+                lessThanOrEqualTo: view.trailingAnchor,
+                constant: -16
+            ),
             rateLabel.topAnchor.constraint(
                 equalTo: titleLabel.bottomAnchor,
                 constant: 8
@@ -206,10 +281,9 @@ final class ExchangeViewController: UIViewController {
                 equalTo: view.safeAreaLayoutGuide.leadingAnchor,
                 constant: 16
             ),
-            
             sourceCard.topAnchor.constraint(
-                equalTo: rateLabel.bottomAnchor,
-                constant: 24
+                equalTo: statusLabel.bottomAnchor,
+                constant: 16
             ),
             sourceCard.leadingAnchor.constraint(
                 equalTo: view.safeAreaLayoutGuide.leadingAnchor,
@@ -246,6 +320,10 @@ final class ExchangeViewController: UIViewController {
     }
     
     private func setupActions() {
+        
+        sourceCard.amountTextField.delegate = self
+        targetCard.amountTextField.delegate = self
+        
         sourceCard.amountTextField.addTarget(
             self,
             action: #selector(sourceAmountChanged),
@@ -258,9 +336,15 @@ final class ExchangeViewController: UIViewController {
             for: .editingChanged
         )
         
-        sourceCard.amountTextField.addTarget(
+        targetCard.amountTextField.addTarget(
             self,
             action: #selector(targetEditingBegan),
+            for: .editingDidBegin
+        )
+        
+        sourceCard.amountTextField.addTarget(
+            self,
+            action: #selector(sourceEditingBegan),
             for: .editingDidBegin
         )
         
@@ -308,3 +392,16 @@ final class ExchangeViewController: UIViewController {
     }
 }
 
+extension ExchangeViewController: UITextFieldDelegate {
+    
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        
+        guard let currentText = textField.text,
+              let swiftRange = Range(range, in: currentText)
+                else { return false }
+        
+        let newText = currentText.replacingCharacters(in: swiftRange, with: string)
+
+        return AmountInputValidator.isValid(newText)
+    }
+}

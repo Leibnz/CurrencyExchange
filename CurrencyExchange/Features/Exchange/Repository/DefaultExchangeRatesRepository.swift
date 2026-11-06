@@ -14,6 +14,11 @@ enum ExchangeRatesError: Error {
     case fallbackUnavailable
 }
 
+struct ExchangeRateResult {
+    let rate: ExchangeRate
+    let source: ExchangeRateSource
+}
+
 @MainActor
 final class DefaultExchangeRatesRepository: ExchangeRatesRepository {
     
@@ -24,17 +29,21 @@ final class DefaultExchangeRatesRepository: ExchangeRatesRepository {
         self.networkClient = networkClient
     }
     
-    func getRate(from: Currency, to: Currency) async throws -> ExchangeRate {
+    func getRate(from: Currency, to: Currency) async throws -> ExchangeRateResult {
         
         if from == to {
-            return ExchangeRate(
-                fromCurrency: from,
-                toCurrency: to,
-                value: 1
+            return ExchangeRateResult(
+                rate: ExchangeRate(
+                    fromCurrency: from,
+                    toCurrency: to,
+                    value: 1
+                ),
+                source: .identity
             )
         }
         
-        let tickers = try await loadTickers()
+        let result = try await loadTickers()
+        let tickers = result.tickers
         
         guard let ticker = tickers.first(where: {
             $0.book.lowercased() == "usdc_\(from.code == "USDc" ? to.code : from.code)".lowercased()
@@ -58,14 +67,22 @@ final class DefaultExchangeRatesRepository: ExchangeRatesRepository {
             throw ExchangeRatesError.unsupportedCurrencyPair
         }
         
-        return ExchangeRate(
-            fromCurrency: from,
-            toCurrency: to,
-            value: rate
+        return ExchangeRateResult(
+            rate: ExchangeRate(
+                fromCurrency: from,
+                toCurrency: to,
+                value: rate
+            ),
+            source: result.source
         )
     }
     
-    private func loadTickers() async throws -> [TickerDTO] {
+    private struct TickersResult {
+        let tickers: [TickerDTO]
+        let source: ExchangeRateSource
+    }
+    
+    private func loadTickers() async throws -> TickersResult {
         do {
             let url = URL(string: "https://api.dolarapp.dev/v1/tickers?currencies=MXN,ARS")!
             
@@ -76,14 +93,26 @@ final class DefaultExchangeRatesRepository: ExchangeRatesRepository {
             }
             
             cachedTickers = tickers
-            return tickers
+            
+            return TickersResult(
+                tickers: tickers,
+                source: .live
+            )
             
         } catch {
             if let cachedTickers {
-                return cachedTickers
+                return TickersResult(
+                    tickers: cachedTickers,
+                    source: .cached
+                )
             }
             
-            return try loadFallbackTickers()
+            let fallbackTickers = try loadFallbackTickers()
+            
+            return TickersResult(
+                tickers: fallbackTickers,
+                source: .fallback
+            )
         }
     }
     
