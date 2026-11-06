@@ -1,6 +1,6 @@
 # CurrencyExchange
 
-A native iOS application for currency conversion, built with Swift and UIKit.
+A currency conversion iOS application built with Swift, UIKit, and MVVM.
 
 ## Overview
 
@@ -14,9 +14,27 @@ Currency Exchange is an iOS application that allows users to convert amounts bet
 * Architecture: MVVM (Model-View-ViewModel)
 * Networking: URLSession
 
+## Features
+
+* Currency conversion using exchange rates.
+
+* Source and target currency selection.
+
+* Currency swapping.
+
+* Bidirectional amount input.
+
+* Exchange rate fetching via REST API.
+
+* In-memory caching and bundled fallback data.
+
+* Input validation for decimal amounts.
+
+* Loading and error states.
+
 ## Architecture
 
-The application follows the MVVM architectural pattern, separating the user interface from presentation logic and data models.
+MVVM separates business logic from UIKit components and makes currency conversion behaviour easier to unit test. For a small application, this is a practical alternative to more complex architectures such as VIPER.
 
 * Model — represents the application's data.
 
