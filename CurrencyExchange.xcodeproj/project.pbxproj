@@ -6,11 +6,36 @@
 	objectVersion = 110;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		49431133309129A300DCE541 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 49CE15953080002200C9CF5E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 49CE159C3080002200C9CF5E;
+			remoteInfo = CurrencyExchange;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		4943112F309129A300DCE541 /* CurrencyExchangeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CurrencyExchangeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		49CE159D3080002200C9CF5E /* CurrencyExchange.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CurrencyExchange.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		4943113B309129ED00DCE541 /* Exceptions for "CurrencyExchangeTests" folder in "CurrencyExchange" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Resources/tickers_fallback.json,
+			);
+			target = 49CE159C3080002200C9CF5E /* CurrencyExchange */;
+		};
+		4943113C309129ED00DCE541 /* Exceptions for "CurrencyExchangeTests" folder in "CurrencyExchangeTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Resources/tickers_fallback.json,
+			);
+			target = 4943112E309129A300DCE541 /* CurrencyExchangeTests */;
+		};
 		49CE15BE3082B2A400C9CF5E /* Exceptions for "CurrencyExchange" folder in "CurrencyExchange" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -21,6 +46,15 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		49431130309129A300DCE541 /* CurrencyExchangeTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4943113B309129ED00DCE541 /* Exceptions for "CurrencyExchangeTests" folder in "CurrencyExchange" target */,
+				4943113C309129ED00DCE541 /* Exceptions for "CurrencyExchangeTests" folder in "CurrencyExchangeTests" target */,
+			);
+			path = CurrencyExchangeTests;
+			sourceTree = "<group>";
+		};
 		49CE159F3080002200C9CF5E /* CurrencyExchange */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -32,6 +66,11 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		4943112C309129A300DCE541 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
 		49CE159A3080002200C9CF5E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
@@ -44,6 +83,7 @@
 			isa = PBXGroup;
 			children = (
 				49CE159F3080002200C9CF5E /* CurrencyExchange */,
+				49431130309129A300DCE541 /* CurrencyExchangeTests */,
 				49CE159E3080002200C9CF5E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -52,6 +92,7 @@
 			isa = PBXGroup;
 			children = (
 				49CE159D3080002200C9CF5E /* CurrencyExchange.app */,
+				4943112F309129A300DCE541 /* CurrencyExchangeTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -59,6 +100,27 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		4943112E309129A300DCE541 /* CurrencyExchangeTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 49431135309129A300DCE541 /* Build configuration list for PBXNativeTarget "CurrencyExchangeTests" */;
+			buildPhases = (
+				4943112B309129A300DCE541 /* Sources */,
+				4943112C309129A300DCE541 /* Frameworks */,
+				4943112D309129A300DCE541 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				49431134309129A300DCE541 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				49431130309129A300DCE541 /* CurrencyExchangeTests */,
+			);
+			name = CurrencyExchangeTests;
+			productName = CurrencyExchangeTests;
+			productReference = 4943112F309129A300DCE541 /* CurrencyExchangeTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		49CE159C3080002200C9CF5E /* CurrencyExchange */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 49CE15B03080002300C9CF5E /* Build configuration list for PBXNativeTarget "CurrencyExchange" */;
@@ -87,6 +149,10 @@
 				LastSwiftUpdateCheck = 2700;
 				LastUpgradeCheck = 2700;
 				TargetAttributes = {
+					4943112E309129A300DCE541 = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = 49CE159C3080002200C9CF5E;
+					};
 					49CE159C3080002200C9CF5E = {
 						CreatedOnToolsVersion = 27.0;
 					};
@@ -107,11 +173,17 @@
 			projectRoot = "";
 			targets = (
 				49CE159C3080002200C9CF5E /* CurrencyExchange */,
+				4943112E309129A300DCE541 /* CurrencyExchangeTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		4943112D309129A300DCE541 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
 		49CE159B3080002200C9CF5E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
@@ -120,6 +192,11 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		4943112B309129A300DCE541 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
 		49CE15993080002200C9CF5E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
@@ -127,7 +204,55 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		49431134309129A300DCE541 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 49CE159C3080002200C9CF5E /* CurrencyExchange */;
+			targetProxy = 49431133309129A300DCE541 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		49431136309129A300DCE541 /* Debug configuration for PBXNativeTarget "CurrencyExchangeTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.andrew.CurrencyExchangeTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CurrencyExchange.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CurrencyExchange";
+			};
+			name = Debug;
+		};
+		49431137309129A300DCE541 /* Release configuration for PBXNativeTarget "CurrencyExchangeTests" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.andrew.CurrencyExchangeTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/CurrencyExchange.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CurrencyExchange";
+			};
+			name = Release;
+		};
 		49CE15B13080002300C9CF5E /* Debug configuration for PBXNativeTarget "CurrencyExchange" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -314,6 +439,14 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		49431135309129A300DCE541 /* Build configuration list for PBXNativeTarget "CurrencyExchangeTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				49431136309129A300DCE541 /* Debug configuration for PBXNativeTarget "CurrencyExchangeTests" */,
+				49431137309129A300DCE541 /* Release configuration for PBXNativeTarget "CurrencyExchangeTests" */,
+			);
+			defaultConfigurationName = Release;
+		};
 		49CE15983080002200C9CF5E /* Build configuration list for PBXProject "CurrencyExchange" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

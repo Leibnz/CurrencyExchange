@@ -64,6 +64,12 @@ final class CurrencyCardView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
+    func configure(currency: Currency, amount: String) {
+        flagLabel.text = currency.flag
+        currencyLabel.text = currency.code
+        amountTextField.text = amount
+    }
+    
     private func configureUI() {
         self.backgroundColor = .white
         self.layer.cornerRadius = 13
