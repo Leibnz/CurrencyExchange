@@ -10,6 +10,7 @@ import UIKit
 final class ExchangeViewController: UIViewController {
     
     private let viewModel: ExchangeViewModel
+    private var previousCurrencies: (from: Currency, to: Currency)?
     
     init(viewModel: ExchangeViewModel) {
         self.viewModel = viewModel
@@ -45,7 +46,7 @@ final class ExchangeViewController: UIViewController {
     private let targetCard = CurrencyCardView(
         flag: "🇲🇽",
         currency: "MXN",
-        isEditable: false
+        isEditable: true
     )
     
     private let swapButton: UIButton = {
@@ -73,7 +74,7 @@ final class ExchangeViewController: UIViewController {
         setupActions()
         bindViewModel()
     }
-    
+      
     private func bindViewModel() {
         viewModel.onStateChange = { [weak self] state in
             DispatchQueue.main.async {
@@ -84,19 +85,38 @@ final class ExchangeViewController: UIViewController {
         render(state: viewModel.state)
     }
     
-    private func render(state: ExchangeViewState) {
+    private func render(state: ExchangeViewState, forceUpdate: Bool = false) {
         rateLabel.text = state.rateDescription
+        
+        let currenciesChanged: Bool
+        
+        if let previousCurrencies {
+            currenciesChanged =
+                previousCurrencies.from != state.selectedFromCurrency ||
+                previousCurrencies.to != state.selectedToCurrency
+        } else {
+            currenciesChanged = true
+        }
+        
+        previousCurrencies = (
+            from: state.selectedFromCurrency,
+            to: state.selectedToCurrency
+        )
+        
+        let sourceAmount = format(state.inputAmount)
+        let targetAmount = format(state.convertedAmount)
+        
+        let shouldUpdateSource = currenciesChanged || !sourceCard.amountTextField.isFirstResponder
+        let shouldUpdateTarget = currenciesChanged || !targetCard.amountTextField.isFirstResponder
         
         sourceCard.configure(
             currency: state.selectedFromCurrency,
-            amount: sourceCard.amountTextField.isFirstResponder
-                ? sourceCard.amountTextField.text ?? ""
-                : format(state.inputAmount)
+            amount: shouldUpdateSource ? sourceAmount : sourceCard.amountTextField.text ?? ""
         )
         
         targetCard.configure(
             currency: state.selectedToCurrency,
-            amount: format(state.convertedAmount)
+            amount: shouldUpdateTarget ? targetAmount : targetCard.amountTextField.text ?? ""
         )
     }
     
@@ -190,8 +210,20 @@ final class ExchangeViewController: UIViewController {
     private func setupActions() {
         sourceCard.amountTextField.addTarget(
             self,
-            action: #selector(amountChanged),
+            action: #selector(sourceAmountChanged),
             for: .editingChanged
+        )
+        
+        targetCard.amountTextField.addTarget(
+            self,
+            action: #selector(targetAmountChanged),
+            for: .editingChanged
+        )
+        
+        sourceCard.amountTextField.addTarget(
+            self,
+            action: #selector(targetEditingBegan),
+            for: .editingDidBegin
         )
         
         swapButton.addTarget(
@@ -201,9 +233,25 @@ final class ExchangeViewController: UIViewController {
         )
     }
     
-    @objc private func amountChanged() {
+    @objc private func sourceEditingBegan() {
+        viewModel.setActiveField(.source)
+    }
+    
+    @objc private func targetEditingBegan() {
+        viewModel.setActiveField(.target)
+    }
+    
+    @objc private func sourceAmountChanged() {
         viewModel.updateAmount(
-            sourceCard.amountTextField.text ?? ""
+            sourceCard.amountTextField.text ?? "",
+            from: .source
+        )
+    }
+    
+    @objc private func targetAmountChanged() {
+        viewModel.updateAmount(
+            targetCard.amountTextField.text ?? "",
+            from: .target
         )
     }
     
