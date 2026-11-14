@@ -9,6 +9,8 @@ import UIKit
 
 final class CurrencyCardView: UIView {
     
+    var onCurrencyTap: (() -> Void)?
+    
     private let flagLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16)
@@ -24,7 +26,7 @@ final class CurrencyCardView: UIView {
     private let chevronImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(systemName: "chevron.down")
-        imageView.tintColor = .black
+        imageView.tintColor = .darkGray
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
@@ -48,13 +50,18 @@ final class CurrencyCardView: UIView {
         return stackView
     }()
     
+    private let currencyButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.accessibilityLabel = "Select currency"
+        return button
+    }()
+    
     init(flag: String, currency: String, isEditable: Bool) {
         super.init(frame: .zero)
         
         flagLabel.text = flag
         currencyLabel.text = currency
         amountTextField.isEnabled = isEditable
-        chevronImageView.isHidden = isEditable
         
         configureUI()
         setupConstraints()
@@ -82,37 +89,76 @@ final class CurrencyCardView: UIView {
         currencyStack.addArrangedSubview(currencyLabel)
         currencyStack.addArrangedSubview(chevronImageView)
         
-        self.addSubview(currencyStack)
+        currencyStack.isUserInteractionEnabled = false
+        
+        currencyButton.addSubview(currencyStack)
+        
+        self.addSubview(currencyButton)
         self.addSubview(amountTextField)
+        
+        currencyButton.addTarget(self, action: #selector(currencyButtonTapped), for: .touchUpInside)
     }
 
     private func setupConstraints() {
+        currencyButton.translatesAutoresizingMaskIntoConstraints = false
         currencyStack.translatesAutoresizingMaskIntoConstraints = false
         amountTextField.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            currencyStack.leadingAnchor.constraint(
-                equalTo: self.leadingAnchor,
+            // MARK: - Currency Button
+
+            currencyButton.leadingAnchor.constraint(
+                equalTo: leadingAnchor,
                 constant: 12
             ),
-            currencyStack.centerYAnchor.constraint(
-                equalTo: self.centerYAnchor
+
+            currencyButton.centerYAnchor.constraint(
+                equalTo: centerYAnchor
             ),
-            
-            amountTextField.leadingAnchor.constraint(
-                greaterThanOrEqualTo: currencyStack.trailingAnchor,
+
+            currencyButton.heightAnchor.constraint(
+                greaterThanOrEqualToConstant: 44
+            ),
+
+            // MARK: - Currency Stack
+
+            currencyStack.leadingAnchor.constraint(
+                equalTo: currencyButton.leadingAnchor,
                 constant: 8
             ),
+
+            currencyStack.trailingAnchor.constraint(
+                equalTo: currencyButton.trailingAnchor,
+                constant: -8
+            ),
+
+            currencyStack.centerYAnchor.constraint(
+                equalTo: currencyButton.centerYAnchor
+            ),
+
+            // MARK: - Amount TextField
+
+            amountTextField.leadingAnchor.constraint(
+                greaterThanOrEqualTo: currencyButton.trailingAnchor,
+                constant: 8
+            ),
+
             amountTextField.trailingAnchor.constraint(
-                equalTo: self.trailingAnchor,
+                equalTo: trailingAnchor,
                 constant: -12
             ),
+
             amountTextField.centerYAnchor.constraint(
-                equalTo: self.centerYAnchor
+                equalTo: centerYAnchor
             ),
+
             amountTextField.widthAnchor.constraint(
                 greaterThanOrEqualToConstant: 75
             )
         ])
+    }
+    
+    @objc private func currencyButtonTapped() {
+        onCurrencyTap?()
     }
 }

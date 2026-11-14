@@ -36,8 +36,8 @@ struct ExchangeViewState: Equatable {
     static let initial = ExchangeViewState(
         selectedFromCurrency: .usdc,
         selectedToCurrency: .mxn,
-        inputAmount: Decimal(9999),
-        convertedAmount: Decimal(9999) * Decimal(string: "18.4097")!,
+        inputAmount: Decimal(1),
+        convertedAmount: Decimal(1) * Decimal(string: "18.4097")!,
         exchangeRate: ExchangeRate(
             fromCurrency: .usdc,
             toCurrency: .mxn,
