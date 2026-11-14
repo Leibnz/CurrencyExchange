@@ -52,14 +52,52 @@ This separation helps keep the code organized and makes individual components ea
 
 ## Getting Started
 
-#### 1. Clone the repository
+### 1. Clone the repository
 
-* git clone https://github.com/Leibnz/CurrencyExchange.git
+```bash
+git clone https://github.com/Leibnz/CurrencyExchange.git
+```
 
-#### 2. Navigate to the project directory
+### 2. Navigate to the project directory
 
-#### 3. Open the project
+```bash
+cd CurrencyExchange
+```
 
-* Open the CurrencyExchange.xcodeproj file in Xcode.
+### 3. Open the project
 
-#### 4. Run the application
+```bash
+open CurrencyExchange.xcodeproj
+```
+
+Alternatively, open `CurrencyExchange.xcodeproj` directly in Xcode.
+
+### 4. Run the application
+
+Select an iOS simulator, then press **Cmd + R** in Xcode to build and run the app.
+
+## Screenshots
+
+Screenshots will be added once they are captured from the running application.
+
+<!-- Replace these placeholders with actual screenshots and commit the image files. -->
+<!-- Example: ![Exchange screen](Screenshots/exchange-screen.png) -->
+<!-- Example: ![Currency selection](Screenshots/currency-selection.png) -->
+
+## Exchange Rate API
+
+The app requests exchange-rate tickers from the DolarApp API:
+
+- **Endpoint:** [DolarApp tickers API](https://api.dolarapp.dev/v1/tickers?currencies=MXN,ARS)
+- **Method:** `GET`
+- **Requested currencies:** MXN and ARS
+
+The repository interprets `bid` and `ask` values for supported USDc currency pairs. If the remote request fails, it can use an in-memory cache or bundled fallback data.
+
+## Known Limitations
+
+- **Limited currency support:** The current implementation supports USDc, MXN, and ARS; it does not support every possible currency pair (for example, direct MXN-to-ARS conversion).
+- **Temporary cache:** Exchange rates cached in memory are lost when the app terminates.
+- **Potentially outdated fallback:** Bundled exchange rates are static and may not reflect current market conditions.
+- **API dependency:** Live exchange rates require the external service to be available and return valid data.
+- **Not for financial transactions:** Displayed conversions are estimates and should not be used as executable exchange quotes.
