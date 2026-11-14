@@ -79,10 +79,11 @@ Select an iOS simulator, then press **Cmd + R** in Xcode to build and run the ap
 ## Screenshots
 
 Screenshots will be added once they are captured from the running application.
+### Exchange Screen
+![Exchange Screen](Screenshots/exchange-screen.png)
 
-<!-- Replace these placeholders with actual screenshots and commit the image files. -->
-<!-- Example: ![Exchange screen](Screenshots/exchange-screen.png) -->
-<!-- Example: ![Currency selection](Screenshots/currency-selection.png) -->
+### Currency Selection
+![Currency Selection](Screenshots/currency-selection.png)
 
 ## Exchange Rate API
 
