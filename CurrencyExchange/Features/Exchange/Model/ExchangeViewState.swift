@@ -12,8 +12,23 @@ enum ExchangeActiveField: Equatable {
     case target
 }
 
+enum ExchangeLoadingState: Equatable {
+    case idle
+    case loading
+}
+
+enum ExchangeRateSource: Equatable {
+    case live
+    case cached
+    case fallback
+    case identity
+}
+
 struct ExchangeViewState: Equatable {
     var activeField: ExchangeActiveField = .source
+    var loadingState: ExchangeLoadingState = .idle
+    var rateSource: ExchangeRateSource = .live
+    var errorMessage: String?
     
     var selectedFromCurrency: Currency
     var selectedToCurrency: Currency

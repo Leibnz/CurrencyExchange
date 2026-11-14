@@ -11,6 +11,16 @@ final class CurrencyCardView: UIView {
     
     var onCurrencyTap: (() -> Void)?
     
+    var isCurrencySelectionEnabled: Bool {
+        get {
+            currencyButton.isEnabled
+        }
+        set {
+            currencyButton.isEnabled = newValue
+            currencyButton.alpha = newValue ? 1 : 0.5
+        }
+    }
+    
     private let flagLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16)
@@ -33,12 +43,11 @@ final class CurrencyCardView: UIView {
     
     let amountTextField: UITextField = {
         let textField = UITextField()
-        textField.font = .systemFont(ofSize: 12, weight: .semibold)
+        textField.font = .systemFont(ofSize: 16, weight: .semibold)
         textField.textAlignment = .right
         textField.keyboardType = .decimalPad
-        textField.borderStyle = .none
-        textField.adjustsFontForContentSizeCategory = true
-        textField.minimumFontSize = 10
+        textField.isEnabled = true
+        textField.isUserInteractionEnabled = true
         return textField
     }()
     

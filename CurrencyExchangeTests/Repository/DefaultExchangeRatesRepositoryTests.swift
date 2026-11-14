@@ -31,12 +31,12 @@ final class DefaultExchangeRatesRepositoryTests: XCTestCase {
         let repository = DefaultExchangeRatesRepository(networkClient: mockClient)
         
         // Act
-        let rate = try await repository.getRate(from: .usdc, to: .mxn)
+        let result = try await repository.getRate(from: .usdc, to: .mxn)
         
         // Assert
-        XCTAssertEqual(rate.value, Decimal(string: "18.4069700000"))
-        XCTAssertEqual(rate.fromCurrency, .usdc)
-        XCTAssertEqual(rate.toCurrency, .mxn)
+        XCTAssertEqual(result.rate.value, Decimal(string: "18.4069700000"))
+        XCTAssertEqual(result.rate.fromCurrency, .usdc)
+        XCTAssertEqual(result.rate.toCurrency, .mxn)
         XCTAssertEqual(mockClient.requestCount, 1)
     }
 }

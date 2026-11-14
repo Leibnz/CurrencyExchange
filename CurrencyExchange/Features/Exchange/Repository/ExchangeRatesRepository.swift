@@ -8,5 +8,5 @@
 import Foundation
 
 protocol ExchangeRatesRepository {
-    func getRate(from: Currency, to: Currency) async throws -> ExchangeRate
+    func getRate(from: Currency, to: Currency) async throws -> ExchangeRateResult
 }
