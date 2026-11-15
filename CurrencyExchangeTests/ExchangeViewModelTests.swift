@@ -235,4 +235,50 @@ final class ExchangeViewModelTests: XCTestCase {
             .fallback
         )
     }
+    
+    func testSwapCurrenciesWithSourceActivePreservesPreviousTargetAmount() async {
+        // Arrange
+        let repository = MockExchangeRatesRepository()
+        repository.rateValue = 0.05
+        let viewModel = ExchangeViewModel(repository: repository)
+        viewModel.updateAmount("100", from: .source)
+        let previousTargetAmount = viewModel.state.convertedAmount
+
+        // Act
+        await viewModel.swapCurrencies()
+
+        // Assert
+        XCTAssertEqual(viewModel.state.selectedFromCurrency, .mxn)
+        XCTAssertEqual(viewModel.state.selectedToCurrency, .usdc)
+        XCTAssertEqual(viewModel.state.activeField, .source)
+        XCTAssertEqual(viewModel.state.inputAmount, previousTargetAmount)
+        XCTAssertEqual(viewModel.state.convertedAmount, previousTargetAmount * Decimal(string: "0.05")!)
+        XCTAssertEqual(viewModel.state.exchangeRate.value, Decimal(string: "0.05")!)
+        XCTAssertEqual(viewModel.state.loadingState, .idle)
+        XCTAssertNil(viewModel.state.errorMessage)
+        XCTAssertEqual(repository.requestCount, 1)
+    }
+    
+    func testSwapCurrenciesWithTargetActivePreservesPreviousSourceAmount() async {
+        // Arrange
+        let repository = MockExchangeRatesRepository()
+        repository.rateValue = 0.05
+        let viewModel = ExchangeViewModel(repository: repository)
+        viewModel.updateAmount("184", from: .target)
+        let previousSourceAmount = viewModel.state.inputAmount
+
+        // Act
+        await viewModel.swapCurrencies()
+
+        // Assert
+        XCTAssertEqual(viewModel.state.selectedFromCurrency, .mxn)
+        XCTAssertEqual(viewModel.state.selectedToCurrency, .usdc)
+        XCTAssertEqual(viewModel.state.activeField, .target)
+        XCTAssertEqual(viewModel.state.convertedAmount, previousSourceAmount)
+        XCTAssertEqual(viewModel.state.inputAmount, previousSourceAmount / Decimal(string: "0.05")!)
+        XCTAssertEqual(viewModel.state.exchangeRate.value, Decimal(string: "0.05")!)
+        XCTAssertEqual(viewModel.state.loadingState, .idle)
+        XCTAssertNil(viewModel.state.errorMessage)
+        XCTAssertEqual(repository.requestCount, 1)
+    }
 }
