@@ -9,20 +9,28 @@ import Foundation
 @testable import CurrencyExchange
 
 final class MockNetworkClient: NetworkClient {
-    
-    var result: Result<Data, Error>
-    private(set) var requestCount = 0
-    
-    init(result: Result<Data, Error>) {
-        self.result = result
+    enum Response {
+        case success([TickerDTO])
+        case failure(Error)
     }
     
+    var responses: [Response] = []
+    private(set) var requestCount = 0
+
     func get<T: Decodable>(from url: URL, as type: T.Type) async throws -> T {
-        
         requestCount += 1
-        
-        let data = try result.get()
-        
-        return try JSONDecoder().decode(T.self, from: data)
+        guard !responses.isEmpty else {
+            throw URLError(.badServerResponse)
+        }
+        let response = responses.removeFirst()
+        switch response {
+        case .success(let tickers):
+            guard let value = tickers as? T else {
+                throw URLError(.cannotDecodeContentData)
+            }
+            return value
+        case .failure(let error):
+            throw error
+        }
     }
 }
