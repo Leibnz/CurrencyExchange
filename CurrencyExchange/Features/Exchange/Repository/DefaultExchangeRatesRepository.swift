@@ -25,10 +25,13 @@ final class DefaultExchangeRatesRepository: ExchangeRatesRepository {
     
     private let logger = Logger(subsystem: "CurrencyExchange", category: "ExchangeRatesRepository")
     private let networkClient: NetworkClient
+    private let configuration: APIConfiguration
+    
     private var cachedTickers: [TickerDTO]?
     
-    init(networkClient: NetworkClient) {
+    init(networkClient: NetworkClient, configuration: APIConfiguration = .production) {
         self.networkClient = networkClient
+        self.configuration = configuration
     }
     
     func getRate(from: Currency, to: Currency) async throws -> ExchangeRateResult {
@@ -85,9 +88,9 @@ final class DefaultExchangeRatesRepository: ExchangeRatesRepository {
     }
     
     private func loadTickers() async throws -> TickersResult {
+        let url = try configuration.url(for: .tickers)
+        
         do {
-            let url = URL(string: "https://api.dolarapp.dev/v1/tickers?currencies=MXN,ARS")!
-            
             let tickers = try await networkClient.get(from: url, as: [TickerDTO].self)
             
             guard !tickers.isEmpty else {

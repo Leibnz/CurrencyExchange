@@ -21,7 +21,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         let networkClient = URLSessionNetworkClient()
         
-        let repository = DefaultExchangeRatesRepository(networkClient: networkClient)
+        let repository = DefaultExchangeRatesRepository(networkClient: networkClient, configuration: .production)
         
         let viewModel = ExchangeViewModel(
             repository: repository
