@@ -47,31 +47,36 @@ final class DefaultExchangeRatesRepository: ExchangeRatesRepository {
             )
         }
         
+        let bookName = try book(for: from, to: to)
+        
         let result = try await loadTickers()
         let tickers = result.tickers
         
         guard let ticker = tickers.first(where: {
-            $0.book.lowercased() == "usdc_\(from.code == "USDc" ? to.code : from.code)".lowercased()
+            $0.book.caseInsensitiveCompare(bookName) == .orderedSame
         }) else {
             throw ExchangeRatesError.unsupportedCurrencyPair
         }
         
         let rate: Decimal
-        
-        if from.code == "USDc" {
+
+        switch (from, to) {
+        case (.usdc, _):
             guard let bid = ticker.bidDecimal, bid > 0 else {
                 throw ExchangeRatesError.invalidRate
             }
             rate = bid
-        } else if to.code == "USDc" {
+
+        case (_, .usdc):
             guard let ask = ticker.askDecimal, ask > 0 else {
                 throw ExchangeRatesError.invalidRate
             }
             rate = 1 / ask
-        } else {
+
+        default:
             throw ExchangeRatesError.unsupportedCurrencyPair
         }
-        
+
         return ExchangeRateResult(
             rate: ExchangeRate(
                 fromCurrency: from,
@@ -141,5 +146,18 @@ final class DefaultExchangeRatesRepository: ExchangeRatesRepository {
             [TickerDTO].self,
             from: data
         )
+    }
+    
+    private func book(for from: Currency, to: Currency) throws -> String {
+        switch (from, to) {
+        case (.usdc, .mxn), (.mxn, .usdc):
+            return "usdc_mxn"
+            
+        case (.usdc, .ars), (.ars, .usdc):
+            return "usdc_ars"
+            
+        default:
+            throw ExchangeRatesError.unsupportedCurrencyPair
+        }
     }
 }
