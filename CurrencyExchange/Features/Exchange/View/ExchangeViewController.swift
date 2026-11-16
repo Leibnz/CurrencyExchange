@@ -11,6 +11,7 @@ final class ExchangeViewController: UIViewController {
     
     private let viewModel: ExchangeViewModel
     private var previousCurrencies: (from: Currency, to: Currency)?
+    private var rateTask: Task<Void, Never>?
     
     init(viewModel: ExchangeViewModel) {
         self.viewModel = viewModel
@@ -47,7 +48,7 @@ final class ExchangeViewController: UIViewController {
     
     private let rateLabel: UILabel = {
         let label = UILabel()
-        label.text = "1 USD = 18.042053"
+        label.text = "Rate not loaded"
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.textColor = .systemGreen
         return label
@@ -86,8 +87,8 @@ final class ExchangeViewController: UIViewController {
         setupActions()
         bindViewModel()
         
-        Task { [weak self] in
-            await self?.viewModel.loadRate()
+        startRateTask { viewModel in
+            await viewModel.loadRate()
         }
     }
     
@@ -100,33 +101,37 @@ final class ExchangeViewController: UIViewController {
             loadingIndicator.stopAnimating()
         }
 
-        swapButton.isEnabled = !isLoading
-
-        sourceCard.isCurrencySelectionEnabled = !isLoading
-        targetCard.isCurrencySelectionEnabled = !isLoading
+        swapButton.isEnabled = true
+        sourceCard.isCurrencySelectionEnabled = true
+        targetCard.isCurrencySelectionEnabled = true
     }
     
     private func renderRateStatus(_ state: ExchangeViewState) {
-        switch state.rateSource {
-        case .live:
-            statusLabel.isHidden = true
-        
-        case .cached:
-            statusLabel.text = "Using last available rate"
-            statusLabel.isHidden = false
-        
-        case .fallback:
-            statusLabel.text = "Using backup rate · May be outdated"
-            statusLabel.isHidden = false
-            
-        case .identity:
-            statusLabel.isHidden = false
+        statusLabel.text = state.errorMessage ?? state.rateSourceDescription
+        statusLabel.isHidden = false
+    }
+
+    private func startRateTask(
+        _ operation: @escaping @MainActor (ExchangeViewModel) async -> Void
+    ) {
+        rateTask?.cancel()
+        let model = viewModel
+        rateTask = Task { [weak self] in
+            guard self != nil, !Task.isCancelled else { return }
+            await operation(model)
         }
-        
-        if let errorMessage = state.errorMessage {
-            statusLabel.text = errorMessage
-            statusLabel.isHidden = false
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        if isMovingFromParent || isBeingDismissed || navigationController?.isBeingDismissed == true {
+            rateTask?.cancel()
+            rateTask = nil
         }
+    }
+
+    deinit {
+        rateTask?.cancel()
     }
     
     private func presentCurrencySelection(for field: CurrencySelectionField) {
@@ -148,11 +153,8 @@ final class ExchangeViewController: UIViewController {
         controller.onCurrencySelected = { [weak self] currency in
             guard let self else { return }
 
-            Task {
-                await self.viewModel.selectCurrency(
-                    currency,
-                    for: field
-                )
+            self.startRateTask { viewModel in
+                await viewModel.selectCurrency(currency, for: field)
             }
         }
 
@@ -386,7 +388,7 @@ final class ExchangeViewController: UIViewController {
     }
     
     @objc private func swapCurrencies() {
-        Task {
+        startRateTask { viewModel in
             await viewModel.swapCurrencies()
         }
     }

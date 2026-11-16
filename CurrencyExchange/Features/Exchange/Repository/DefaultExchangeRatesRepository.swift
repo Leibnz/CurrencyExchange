@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import os
 
 enum ExchangeRatesError: Error {
     case unsupportedCurrencyPair
@@ -22,6 +23,7 @@ struct ExchangeRateResult {
 @MainActor
 final class DefaultExchangeRatesRepository: ExchangeRatesRepository {
     
+    private let logger = Logger(subsystem: "CurrencyExchange", category: "ExchangeRatesRepository")
     private let networkClient: NetworkClient
     private var cachedTickers: [TickerDTO]?
     
@@ -92,6 +94,7 @@ final class DefaultExchangeRatesRepository: ExchangeRatesRepository {
                 throw ExchangeRatesError.emptyResponse
             }
             
+            try Task.checkCancellation()
             cachedTickers = tickers
             
             return TickersResult(
@@ -100,13 +103,21 @@ final class DefaultExchangeRatesRepository: ExchangeRatesRepository {
             )
             
         } catch {
+            try Task.checkCancellation()
+            if error is CancellationError ||
+                (error as? URLError)?.code == .cancelled {
+                throw CancellationError()
+            }
+            logger.warning("Ticker request failed: \(String(describing: error), privacy: .public)")
             if let cachedTickers {
+                logger.info("Using cached exchange rates")
                 return TickersResult(
                     tickers: cachedTickers,
                     source: .cached
                 )
             }
             
+            logger.info("Trying bundled fallback exchange rates")
             let fallbackTickers = try loadFallbackTickers()
             
             return TickersResult(

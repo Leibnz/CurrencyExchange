@@ -12,7 +12,6 @@ final class ExchangeViewModel {
     
     private let repository: ExchangeRatesRepository
     
-    private var isChangingCurrency = false
     private var currencyRequestID = 0
     
     private(set) var state: ExchangeViewState = .initial {
@@ -34,7 +33,17 @@ final class ExchangeViewModel {
     }
     
     func loadRate() async {
+        guard !Task.isCancelled else { return }
+        
+        currencyRequestID += 1
         let requestID = currencyRequestID
+        setLoading(true)
+        
+        defer {
+            if requestID == currencyRequestID {
+                setLoading(false)
+            }
+        }
 
         let from = state.selectedFromCurrency
         let to = state.selectedToCurrency
@@ -45,6 +54,7 @@ final class ExchangeViewModel {
                 to: to
             )
 
+            guard !Task.isCancelled else { return }
             let rate = result.rate
 
             guard requestID == currencyRequestID,
@@ -75,7 +85,7 @@ final class ExchangeViewModel {
             state = updatedState
 
         } catch {
-            guard requestID == currencyRequestID else {
+            guard !Task.isCancelled, !(error is CancellationError), requestID == currencyRequestID else {
                 return
             }
 
@@ -90,16 +100,16 @@ final class ExchangeViewModel {
     
     func selectCurrency(_ currency: Currency, for field: CurrencySelectionField) async {
         
-        guard !isChangingCurrency else {
-            return
-        }
+        guard !Task.isCancelled else { return }
 
-        isChangingCurrency = true
+        currencyRequestID += 1
+        let requestID = currencyRequestID
         setLoading(true)
 
         defer {
-            isChangingCurrency = false
-            setLoading(false)
+            if requestID == currencyRequestID {
+                setLoading(false)
+            }
         }
         
         var newFrom = state.selectedFromCurrency
@@ -115,12 +125,10 @@ final class ExchangeViewModel {
         
         guard newFrom != state.selectedFromCurrency || newTo != state.selectedToCurrency else { return }
         
-        currencyRequestID += 1
-        let requestID = currencyRequestID
-        
         do {
             let result = try await repository.getRate(from: newFrom, to: newTo)
             
+            guard !Task.isCancelled else { return }
             let rate = result.rate
             
             guard requestID == currencyRequestID,
@@ -147,7 +155,7 @@ final class ExchangeViewModel {
             
             state = updatedState
         } catch {
-            guard requestID == currencyRequestID else {
+            guard !Task.isCancelled, !(error is CancellationError), requestID == currencyRequestID else {
                 return
             }
 
@@ -166,26 +174,26 @@ final class ExchangeViewModel {
         guard let amount = AmountInputValidator.parse(text) else {
             return
         }
-        
+
         var updatedState = state
         updatedState.activeField = field
-        
-        let rate = updatedState.exchangeRate.value
-        
-        guard rate > 0 else {
-            return
-        }
-        
+
         switch field {
         case .source:
             updatedState.inputAmount = amount
-            updatedState.convertedAmount = amount * rate
-            
+
+            if let rate = updatedState.exchangeRate?.value, rate > 0 {
+                updatedState.convertedAmount = amount * rate
+            }
+
         case .target:
             updatedState.convertedAmount = amount
-            updatedState.inputAmount = amount / rate
+
+            if let rate = updatedState.exchangeRate?.value, rate > 0 {
+                updatedState.inputAmount = amount / rate
+            }
         }
-        
+
         state = updatedState
     }
     
@@ -193,23 +201,20 @@ final class ExchangeViewModel {
     
     func swapCurrencies() async {
         
-        guard !isChangingCurrency else {
-            return
-        }
+        guard !Task.isCancelled else { return }
 
-        isChangingCurrency = true
+        currencyRequestID += 1
+        let requestID = currencyRequestID
         setLoading(true)
 
         defer {
-            isChangingCurrency = false
-            setLoading(false)
+            if requestID == currencyRequestID {
+                setLoading(false)
+            }
         }
         
         let newFrom = state.selectedToCurrency
         let newTo = state.selectedFromCurrency
-
-        currencyRequestID += 1
-        let requestID = currencyRequestID
 
         do {
             let result = try await repository.getRate(
@@ -217,6 +222,7 @@ final class ExchangeViewModel {
                 to: newTo
             )
             
+            guard !Task.isCancelled else { return }
             let rate = result.rate
 
             guard requestID == currencyRequestID,
@@ -252,7 +258,7 @@ final class ExchangeViewModel {
             state = updatedState
 
         } catch {
-            guard requestID == currencyRequestID else {
+            guard !Task.isCancelled, !(error is CancellationError), requestID == currencyRequestID else {
                 return
             }
 
