@@ -32,6 +32,18 @@ final class ExchangeViewModel {
         state = updatedState
     }
     
+    private func applyRate(_ rate: ExchangeRate, to state: inout ExchangeViewState) {
+        state.exchangeRate = rate
+
+        switch state.activeField {
+        case .source:
+            state.convertedAmount = rate.convert(state.inputAmount)
+
+        case .target:
+            state.inputAmount = state.convertedAmount / rate.value
+        }
+    }
+    
     func loadRate() async {
         guard !Task.isCancelled else { return }
         
@@ -67,20 +79,11 @@ final class ExchangeViewModel {
             }
 
             var updatedState = state
+            
+            applyRate(rate, to: &updatedState)
 
-            updatedState.exchangeRate = rate
             updatedState.rateSource = result.source
             updatedState.errorMessage = nil
-
-            switch updatedState.activeField {
-            case .source:
-                updatedState.convertedAmount =
-                    rate.convert(updatedState.inputAmount)
-
-            case .target:
-                updatedState.inputAmount =
-                    updatedState.convertedAmount / rate.value
-            }
 
             state = updatedState
 
@@ -141,17 +144,11 @@ final class ExchangeViewModel {
 
             updatedState.selectedFromCurrency = newFrom
             updatedState.selectedToCurrency = newTo
-            updatedState.exchangeRate = rate
+            
+            applyRate(rate, to: &updatedState)
+ 
             updatedState.rateSource = result.source
             updatedState.errorMessage = nil
-            
-            switch updatedState.activeField {
-            case .source:
-                updatedState.convertedAmount = updatedState.inputAmount * rate.value
-                
-            case .target:
-                updatedState.inputAmount = updatedState.convertedAmount / rate.value
-            }
             
             state = updatedState
         } catch {
@@ -182,16 +179,12 @@ final class ExchangeViewModel {
         case .source:
             updatedState.inputAmount = amount
 
-            if let rate = updatedState.exchangeRate?.value, rate > 0 {
-                updatedState.convertedAmount = amount * rate
-            }
-
         case .target:
             updatedState.convertedAmount = amount
-
-            if let rate = updatedState.exchangeRate?.value, rate > 0 {
-                updatedState.inputAmount = amount / rate
-            }
+        }
+        
+        if let rate = updatedState.exchangeRate, rate.value > 0 {
+            applyRate(rate, to: &updatedState)
         }
 
         state = updatedState
@@ -236,24 +229,19 @@ final class ExchangeViewModel {
 
             updatedState.selectedFromCurrency = newFrom
             updatedState.selectedToCurrency = newTo
-            updatedState.exchangeRate = rate
-            updatedState.rateSource = result.source
-            updatedState.errorMessage = nil
-
-            let previousSourceAmount = state.inputAmount
-            let previousTargetAmount = state.convertedAmount
 
             switch updatedState.activeField {
             case .source:
-                updatedState.inputAmount = previousTargetAmount
-                updatedState.convertedAmount =
-                    previousTargetAmount * rate.value
+                updatedState.inputAmount = state.convertedAmount
 
             case .target:
-                updatedState.convertedAmount = previousSourceAmount
-                updatedState.inputAmount =
-                    previousSourceAmount / rate.value
+                updatedState.convertedAmount = state.inputAmount
             }
+
+            applyRate(rate, to: &updatedState)
+
+            updatedState.rateSource = result.source
+            updatedState.errorMessage = nil
 
             state = updatedState
 
