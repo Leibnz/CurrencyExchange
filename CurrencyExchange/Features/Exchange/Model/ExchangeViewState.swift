@@ -27,7 +27,7 @@ enum ExchangeRateSource: Equatable {
 struct ExchangeViewState: Equatable {
     var activeField: ExchangeActiveField = .source
     var loadingState: ExchangeLoadingState = .idle
-    var rateSource: ExchangeRateSource = .live
+    var rateSource: ExchangeRateSource? = nil
     var errorMessage: String?
     
     var selectedFromCurrency: Currency
@@ -36,9 +36,10 @@ struct ExchangeViewState: Equatable {
     var inputAmount: Decimal
     var convertedAmount: Decimal
     
-    var exchangeRate: ExchangeRate
+    var exchangeRate: ExchangeRate?
     
     var rateDescription: String {
+        guard let exchangeRate else { return "Rate not loaded" }
         let formattedRate = exchangeRate.value.formatted(
             .number
                 .precision(.fractionLength(4))
@@ -48,15 +49,22 @@ struct ExchangeViewState: Equatable {
         "\(formattedRate) \(selectedToCurrency.code)"
     }
     
+    var rateSourceDescription: String {
+        if loadingState == .loading { return "Loading…" }
+        switch rateSource {
+        case .live: return "Live"
+        case .cached: return "Cached"
+        case .fallback: return "Offline fallback"
+        case .identity: return "Same currency"
+        case nil: return "Not loaded"
+        }
+    }
+    
     static let initial = ExchangeViewState(
         selectedFromCurrency: .usdc,
         selectedToCurrency: .mxn,
         inputAmount: Decimal(1),
-        convertedAmount: Decimal(1) * Decimal(string: "18.4097")!,
-        exchangeRate: ExchangeRate(
-            fromCurrency: .usdc,
-            toCurrency: .mxn,
-            value: Decimal(string: "18.4097")!
-        )
+        convertedAmount: Decimal(0),
+        exchangeRate: nil
     )
 }

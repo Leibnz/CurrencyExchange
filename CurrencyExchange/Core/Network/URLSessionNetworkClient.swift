@@ -23,6 +23,9 @@ final class URLSessionNetworkClient: NetworkClient {
         do {
             (data, response) = try await session.data(from: url)
         } catch {
+            if Task.isCancelled || (error as? URLError)?.code == .cancelled {
+                throw CancellationError()
+            }
             throw NetworkError.transport(error)
         }
         
