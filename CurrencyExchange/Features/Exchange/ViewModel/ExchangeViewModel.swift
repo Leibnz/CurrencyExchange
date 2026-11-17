@@ -94,8 +94,7 @@ final class ExchangeViewModel {
 
             var updatedState = state
 
-            updatedState.errorMessage =
-                "Unable to update exchange rate. Please try again."
+            updatedState.errorMessage = L10n.Error.loadRate
 
             state = updatedState
         }
@@ -158,8 +157,7 @@ final class ExchangeViewModel {
 
             var updatedState = state
 
-            updatedState.errorMessage =
-                "Unable to select currency. Please try again."
+            updatedState.errorMessage = L10n.Error.swapCurrencies
 
             state = updatedState
         }

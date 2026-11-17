@@ -1,0 +1,16 @@
+//
+//  Untitled.swift
+//  CurrencyExchange
+//
+//  Created by Andrew on 17.11.2026.
+//
+
+"exchange.error.load_rate" = "Не удалось обновить курс валют. Попробуйте ещё раз.";
+"exchange.error.select_currency" = "Не удалось выбрать валюту. Попробуйте ещё раз.";
+"exchange.error.swap_currencies" = "Не удалось поменять валюты местами. Попробуйте ещё раз.";
+"exchange.rate.not_loaded" = "Курс ещё не загружен";
+"exchange.rate.loading" = "Загрузка…";
+"exchange.rate.live" = "Актуальный курс";
+"exchange.rate.cached" = "Сохранённый курс";
+"exchange.rate.fallback" = "Резервный курс · Может быть устаревшим";
+"exchange.rate.identity" = "Одинаковые валюты";

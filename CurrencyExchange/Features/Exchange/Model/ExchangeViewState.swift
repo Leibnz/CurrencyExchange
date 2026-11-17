@@ -39,24 +39,37 @@ struct ExchangeViewState: Equatable {
     var exchangeRate: ExchangeRate?
     
     var rateDescription: String {
-        guard let exchangeRate else { return "Rate not loaded" }
+        guard let exchangeRate else {
+            return L10n.Rate.notLoaded
+        }
+
         let formattedRate = exchangeRate.value.formatted(
-            .number
-                .precision(.fractionLength(4))
+            .number.precision(.fractionLength(4))
         )
-        
-        return "1 \(selectedFromCurrency.code) = " +
-        "\(formattedRate) \(selectedToCurrency.code)"
+
+        return "1 \(selectedFromCurrency.code) = \(formattedRate) \(selectedToCurrency.code)"
     }
     
     var rateSourceDescription: String {
-        if loadingState == .loading { return "Loading…" }
+        if loadingState == .loading {
+            return L10n.Rate.loading
+        }
+
         switch rateSource {
-        case .live: return "Live"
-        case .cached: return "Cached"
-        case .fallback: return "Offline fallback"
-        case .identity: return "Same currency"
-        case nil: return "Not loaded"
+        case .live:
+            return L10n.Rate.live
+
+        case .cached:
+            return L10n.Rate.cached
+
+        case .fallback:
+            return L10n.Rate.fallback
+
+        case .identity:
+            return L10n.Rate.identity
+
+        case nil:
+            return L10n.Rate.notLoaded
         }
     }
     
