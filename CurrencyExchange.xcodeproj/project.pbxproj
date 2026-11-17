@@ -22,20 +22,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		4943113B309129ED00DCE541 /* Exceptions for "CurrencyExchangeTests" folder in "CurrencyExchange" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Resources/tickers_fallback.json,
-			);
-			target = 49CE159C3080002200C9CF5E /* CurrencyExchange */;
-		};
-		4943113C309129ED00DCE541 /* Exceptions for "CurrencyExchangeTests" folder in "CurrencyExchangeTests" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Resources/tickers_fallback.json,
-			);
-			target = 4943112E309129A300DCE541 /* CurrencyExchangeTests */;
-		};
 		49CE15BE3082B2A400C9CF5E /* Exceptions for "CurrencyExchange" folder in "CurrencyExchange" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -59,10 +45,6 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		49431130309129A300DCE541 /* CurrencyExchangeTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				4943113B309129ED00DCE541 /* Exceptions for "CurrencyExchangeTests" folder in "CurrencyExchange" target */,
-				4943113C309129ED00DCE541 /* Exceptions for "CurrencyExchangeTests" folder in "CurrencyExchangeTests" target */,
-			);
 			path = CurrencyExchangeTests;
 			sourceTree = "<group>";
 		};
