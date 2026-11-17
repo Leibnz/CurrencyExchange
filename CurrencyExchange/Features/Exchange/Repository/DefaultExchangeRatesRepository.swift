@@ -35,7 +35,7 @@ final class DefaultExchangeRatesRepository: ExchangeRatesRepository {
     }
     
     func getRate(from: Currency, to: Currency) async throws -> ExchangeRateResult {
-        
+
         if from == to {
             return ExchangeRateResult(
                 rate: ExchangeRate(
@@ -46,36 +46,14 @@ final class DefaultExchangeRatesRepository: ExchangeRatesRepository {
                 source: .identity
             )
         }
-        
-        let bookName = try book(for: from, to: to)
-        
+
         let result = try await loadTickers()
-        let tickers = result.tickers
-        
-        guard let ticker = tickers.first(where: {
-            $0.book.caseInsensitiveCompare(bookName) == .orderedSame
-        }) else {
-            throw ExchangeRatesError.unsupportedCurrencyPair
-        }
-        
-        let rate: Decimal
 
-        switch (from, to) {
-        case (.usdc, _):
-            guard let bid = ticker.bidDecimal, bid > 0 else {
-                throw ExchangeRatesError.invalidRate
-            }
-            rate = bid
-
-        case (_, .usdc):
-            guard let ask = ticker.askDecimal, ask > 0 else {
-                throw ExchangeRatesError.invalidRate
-            }
-            rate = 1 / ask
-
-        default:
-            throw ExchangeRatesError.unsupportedCurrencyPair
-        }
+        let rate = try calculateRate(
+            from: from,
+            to: to,
+            tickers: result.tickers
+        )
 
         return ExchangeRateResult(
             rate: ExchangeRate(
@@ -128,6 +106,8 @@ final class DefaultExchangeRatesRepository: ExchangeRatesRepository {
             logger.info("Trying bundled fallback exchange rates")
             let fallbackTickers = try loadFallbackTickers()
             
+            try Task.checkCancellation()
+            
             return TickersResult(
                 tickers: fallbackTickers,
                 source: .fallback
@@ -142,22 +122,72 @@ final class DefaultExchangeRatesRepository: ExchangeRatesRepository {
         
         let data = try Data(contentsOf: url)
         
-        return try JSONDecoder().decode(
-            [TickerDTO].self,
-            from: data
-        )
+        let tickers = try JSONDecoder().decode([TickerDTO].self, from: data)
+        
+        guard !tickers.isEmpty else {
+            throw ExchangeRatesError.emptyResponse
+        }
+        
+        return tickers
     }
     
-    private func book(for from: Currency, to: Currency) throws -> String {
-        switch (from, to) {
-        case (.usdc, .mxn), (.mxn, .usdc):
+    private func book(for currency: Currency) throws -> String {
+        switch currency {
+        case .mxn:
             return "usdc_mxn"
             
-        case (.usdc, .ars), (.ars, .usdc):
+        case .ars:
             return "usdc_ars"
             
         default:
             throw ExchangeRatesError.unsupportedCurrencyPair
         }
+    }
+    
+    private func calculateRate(from: Currency, to: Currency, tickers: [TickerDTO]) throws -> Decimal {
+
+        func ticker(for currency: Currency) throws -> TickerDTO {
+            let bookName = try book(for: currency)
+            
+            guard let ticker = tickers.first(where: {
+                $0.book.caseInsensitiveCompare(bookName) == .orderedSame
+            }) else {
+                throw ExchangeRatesError.unsupportedCurrencyPair
+            }
+            
+            return ticker
+        }
+
+        if from == .usdc {
+            let ticker = try ticker(for: to)
+
+            guard let bid = ticker.bidDecimal, bid > 0 else {
+                throw ExchangeRatesError.invalidRate
+            }
+
+            return bid
+        }
+
+        if to == .usdc {
+            let ticker = try ticker(for: from)
+
+            guard let ask = ticker.askDecimal, ask > 0 else {
+                throw ExchangeRatesError.invalidRate
+            }
+
+            return 1 / ask
+        }
+
+        let sourceTicker = try ticker(for: from)
+        let targetTicker = try ticker(for: to)
+
+        guard let sourceAsk = sourceTicker.askDecimal,
+              let targetBid = targetTicker.bidDecimal,
+              sourceAsk > 0,
+              targetBid > 0 else {
+            throw ExchangeRatesError.invalidRate
+        }
+
+        return targetBid / sourceAsk
     }
 }
