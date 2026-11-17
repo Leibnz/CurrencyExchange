@@ -15,12 +15,4 @@ struct ExchangeRate: Equatable {
     func convert(_ amount: Decimal) -> Decimal {
         return amount * value
     }
-    
-    var reversed: ExchangeRate {
-        ExchangeRate(
-            fromCurrency: toCurrency,
-            toCurrency: fromCurrency,
-            value: Decimal(1) / value
-        )
-    }
 }
