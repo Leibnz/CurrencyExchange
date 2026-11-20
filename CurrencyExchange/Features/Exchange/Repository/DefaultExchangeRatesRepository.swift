@@ -22,7 +22,6 @@ struct ExchangeRateResult {
 
 @MainActor
 final class DefaultExchangeRatesRepository: ExchangeRatesRepository {
-
     private let logger = Logger(subsystem: "CurrencyExchange", category: "ExchangeRatesRepository")
     private let networkClient: NetworkClient
     private let configuration: APIConfiguration
@@ -35,7 +34,6 @@ final class DefaultExchangeRatesRepository: ExchangeRatesRepository {
     }
 
     func getRate(from: Currency, to: Currency) async throws -> ExchangeRateResult {
-
         if from == to {
             return ExchangeRateResult(
                 rate: ExchangeRate(
@@ -91,7 +89,8 @@ final class DefaultExchangeRatesRepository: ExchangeRatesRepository {
         } catch {
             try Task.checkCancellation()
             if error is CancellationError ||
-                (error as? URLError)?.code == .cancelled {
+                (error as? URLError)?.code == .cancelled
+            {
                 throw CancellationError()
             }
             logger.warning("Ticker request failed: \(String(describing: error), privacy: .public)")
@@ -134,10 +133,10 @@ final class DefaultExchangeRatesRepository: ExchangeRatesRepository {
     private func book(for currency: Currency) throws -> String {
         switch currency {
         case .mxn:
-            return "usdc_mxn"
+            "usdc_mxn"
 
         case .ars:
-            return "usdc_ars"
+            "usdc_ars"
 
         default:
             throw ExchangeRatesError.unsupportedCurrencyPair
@@ -145,7 +144,6 @@ final class DefaultExchangeRatesRepository: ExchangeRatesRepository {
     }
 
     private func calculateRate(from: Currency, to: Currency, tickers: [TickerDTO]) throws -> Decimal {
-
         func ticker(for currency: Currency) throws -> TickerDTO {
             let bookName = try book(for: currency)
 
@@ -184,7 +182,8 @@ final class DefaultExchangeRatesRepository: ExchangeRatesRepository {
         guard let sourceAsk = sourceTicker.askDecimal,
               let targetBid = targetTicker.bidDecimal,
               sourceAsk > 0,
-              targetBid > 0 else {
+              targetBid > 0
+        else {
             throw ExchangeRatesError.invalidRate
         }
 

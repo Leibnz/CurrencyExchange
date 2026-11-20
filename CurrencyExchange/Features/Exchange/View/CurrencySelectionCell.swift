@@ -8,7 +8,6 @@
 import UIKit
 
 final class CurrencySelectionCell: UITableViewCell {
-
     static let reuseIdentifier = "CurrencySelectionCell"
 
     private let flagLabel: UILabel = {
@@ -53,7 +52,8 @@ final class CurrencySelectionCell: UITableViewCell {
         setupConstraints()
     }
 
-    required init?(coder: NSCoder) {
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
@@ -98,7 +98,7 @@ final class CurrencySelectionCell: UITableViewCell {
             currencyStack.trailingAnchor.constraint(
                 lessThanOrEqualTo: selectionImageView.leadingAnchor,
                 constant: -8
-            )
+            ),
         ])
     }
 

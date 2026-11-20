@@ -18,7 +18,8 @@ struct APIConfiguration {
         guard let baseURL = URL(string: baseURLString),
               let scheme = baseURL.scheme,
               ["http", "https"].contains(scheme),
-              baseURL.host != nil else {
+              baseURL.host != nil
+        else {
             throw EndpointError.invalidURL
         }
 

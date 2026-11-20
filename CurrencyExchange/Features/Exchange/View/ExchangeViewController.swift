@@ -8,7 +8,6 @@
 import UIKit
 
 final class ExchangeViewController: UIViewController {
-
     private let viewModel: ExchangeViewModel
     private var previousCurrencies: (from: Currency, to: Currency)?
     private var rateTask: Task<Void, Never>?
@@ -18,7 +17,8 @@ final class ExchangeViewController: UIViewController {
         super.init(nibName: nil, bundle: nil)
     }
 
-    required init?(coder: NSCoder) {
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
@@ -135,14 +135,12 @@ final class ExchangeViewController: UIViewController {
     }
 
     private func presentCurrencySelection(for field: CurrencySelectionField) {
-        let selectedCurrency: Currency
-
-        switch field {
+        let selectedCurrency: Currency = switch field {
         case .source:
-            selectedCurrency = viewModel.state.selectedFromCurrency
+            viewModel.state.selectedFromCurrency
 
         case .target:
-            selectedCurrency = viewModel.state.selectedToCurrency
+            viewModel.state.selectedToCurrency
         }
 
         let controller = CurrencySelectionViewController(
@@ -153,7 +151,7 @@ final class ExchangeViewController: UIViewController {
         controller.onCurrencySelected = { [weak self] currency in
             guard let self else { return }
 
-            self.startRateTask { viewModel in
+            startRateTask { viewModel in
                 await viewModel.selectCurrency(currency, for: field)
             }
         }
@@ -183,14 +181,11 @@ final class ExchangeViewController: UIViewController {
         renderLoadingState(state)
         renderRateStatus(state)
 
-        let currenciesChanged: Bool
-
-        if let previousCurrencies {
-            currenciesChanged =
-                previousCurrencies.from != state.selectedFromCurrency ||
+        let currenciesChanged: Bool = if let previousCurrencies {
+            previousCurrencies.from != state.selectedFromCurrency ||
                 previousCurrencies.to != state.selectedToCurrency
         } else {
-            currenciesChanged = true
+            true
         }
 
         previousCurrencies = (
@@ -240,7 +235,7 @@ final class ExchangeViewController: UIViewController {
             rateLabel,
             sourceCard,
             targetCard,
-            swapButton
+            swapButton,
         ].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview($0)
@@ -317,12 +312,11 @@ final class ExchangeViewController: UIViewController {
                 constant: 8
             ),
             swapButton.widthAnchor.constraint(equalToConstant: 24),
-            swapButton.heightAnchor.constraint(equalToConstant: 24)
+            swapButton.heightAnchor.constraint(equalToConstant: 24),
         ])
     }
 
     private func setupActions() {
-
         sourceCard.amountTextField.delegate = self
         targetCard.amountTextField.delegate = self
 
@@ -395,16 +389,14 @@ final class ExchangeViewController: UIViewController {
 }
 
 extension ExchangeViewController: UITextFieldDelegate {
-
     func textField(
         _ textField: UITextField,
         shouldChangeCharactersIn range: NSRange,
         replacementString string: String
     ) -> Bool {
-
         guard let currentText = textField.text,
               let swiftRange = Range(range, in: currentText)
-                else { return false }
+        else { return false }
 
         let newText = currentText.replacingCharacters(in: swiftRange, with: string)
 

@@ -13,6 +13,6 @@ struct ExchangeRate: Equatable {
     let value: Decimal
 
     func convert(_ amount: Decimal) -> Decimal {
-        return amount * value
+        amount * value
     }
 }

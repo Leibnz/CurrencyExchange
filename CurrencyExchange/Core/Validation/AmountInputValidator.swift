@@ -7,8 +7,7 @@
 
 import Foundation
 
-struct AmountInputValidator {
-
+enum AmountInputValidator {
     static let maxIntegerDigits = 12
     static let maxFractionDigits = 6
 

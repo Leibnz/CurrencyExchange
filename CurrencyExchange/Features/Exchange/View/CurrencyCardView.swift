@@ -8,7 +8,6 @@
 import UIKit
 
 final class CurrencyCardView: UIView {
-
     var onCurrencyTap: (() -> Void)?
 
     var isCurrencySelectionEnabled: Bool {
@@ -76,7 +75,8 @@ final class CurrencyCardView: UIView {
         setupConstraints()
     }
 
-    required init?(coder: NSCoder) {
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
@@ -90,9 +90,9 @@ final class CurrencyCardView: UIView {
     }
 
     private func configureUI() {
-        self.backgroundColor = .white
-        self.layer.cornerRadius = 13
-        self.clipsToBounds = true
+        backgroundColor = .white
+        layer.cornerRadius = 13
+        clipsToBounds = true
 
         currencyStack.addArrangedSubview(flagLabel)
         currencyStack.addArrangedSubview(currencyLabel)
@@ -102,8 +102,8 @@ final class CurrencyCardView: UIView {
 
         currencyButton.addSubview(currencyStack)
 
-        self.addSubview(currencyButton)
-        self.addSubview(amountTextField)
+        addSubview(currencyButton)
+        addSubview(amountTextField)
 
         currencyButton.addTarget(self, action: #selector(currencyButtonTapped), for: .touchUpInside)
     }
@@ -163,7 +163,7 @@ final class CurrencyCardView: UIView {
 
             amountTextField.widthAnchor.constraint(
                 greaterThanOrEqualToConstant: 75
-            )
+            ),
         ])
     }
 

@@ -8,15 +8,13 @@
 import Foundation
 
 final class URLSessionNetworkClient: NetworkClient {
-
     private let session: URLSession
 
     init(session: URLSession = .shared) {
         self.session = session
     }
 
-    func get<T: Decodable>(from url: URL, as type: T.Type) async throws -> T {
-
+    func get<T: Decodable>(from url: URL, as _: T.Type) async throws -> T {
         let data: Data
         let response: URLResponse
 
@@ -33,7 +31,7 @@ final class URLSessionNetworkClient: NetworkClient {
             throw NetworkError.invalidResponse
         }
 
-        guard (200...299).contains(httpResponse.statusCode) else {
+        guard (200 ... 299).contains(httpResponse.statusCode) else {
             throw NetworkError.httpError(
                 statusCode: httpResponse.statusCode
             )

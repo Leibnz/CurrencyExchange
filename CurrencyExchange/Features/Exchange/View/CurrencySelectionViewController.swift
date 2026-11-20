@@ -8,7 +8,6 @@
 import UIKit
 
 final class CurrencySelectionViewController: UIViewController {
-
     var onCurrencySelected: ((Currency) -> Void)?
 
     private let currencies: [Currency]
@@ -58,7 +57,8 @@ final class CurrencySelectionViewController: UIViewController {
         super.init(nibName: nil, bundle: nil)
     }
 
-    required init?(coder: NSCoder) {
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
@@ -130,7 +130,7 @@ final class CurrencySelectionViewController: UIViewController {
             ),
             tableView.heightAnchor.constraint(
                 equalToConstant: CGFloat(currencies.count) * 40
-            )
+            ),
         ])
     }
 
@@ -149,11 +149,11 @@ final class CurrencySelectionViewController: UIViewController {
 
 extension CurrencySelectionViewController:
     UITableViewDelegate,
-    UITableViewDataSource {
-
+    UITableViewDataSource
+{
     func tableView(
-        _ tableView: UITableView,
-        numberOfRowsInSection section: Int
+        _: UITableView,
+        numberOfRowsInSection _: Int
     ) -> Int {
         currencies.count
     }
@@ -162,7 +162,6 @@ extension CurrencySelectionViewController:
         _ tableView: UITableView,
         cellForRowAt indexPath: IndexPath
     ) -> UITableViewCell {
-
         let cell = tableView.dequeueReusableCell(
             withIdentifier: CurrencySelectionCell.reuseIdentifier,
             for: indexPath

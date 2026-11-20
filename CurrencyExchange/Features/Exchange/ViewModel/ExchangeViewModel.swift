@@ -9,7 +9,6 @@ import Foundation
 
 @MainActor
 final class ExchangeViewModel {
-
     private let repository: ExchangeRatesRepository
 
     private var currencyRequestID = 0
@@ -74,7 +73,8 @@ final class ExchangeViewModel {
                   rate.fromCurrency == from,
                   rate.toCurrency == to,
                   state.selectedFromCurrency == from,
-                  state.selectedToCurrency == to else {
+                  state.selectedToCurrency == to
+            else {
                 return
             }
 
@@ -101,7 +101,6 @@ final class ExchangeViewModel {
     }
 
     func selectCurrency(_ currency: Currency, for field: CurrencySelectionField) async {
-
         guard !Task.isCancelled else { return }
 
         currencyRequestID += 1
@@ -137,7 +136,7 @@ final class ExchangeViewModel {
                   rate.value > 0,
                   rate.fromCurrency == newFrom,
                   rate.toCurrency == newTo
-                    else { return }
+            else { return }
 
             var updatedState = state
 
@@ -191,7 +190,6 @@ final class ExchangeViewModel {
     // MARK: - Swap Currencies
 
     func swapCurrencies() async {
-
         guard !Task.isCancelled else { return }
 
         currencyRequestID += 1
@@ -219,7 +217,8 @@ final class ExchangeViewModel {
             guard requestID == currencyRequestID,
                   rate.value > 0,
                   rate.fromCurrency == newFrom,
-                  rate.toCurrency == newTo else {
+                  rate.toCurrency == newTo
+            else {
                 return
             }
 
@@ -258,6 +257,7 @@ final class ExchangeViewModel {
     }
 
     // MARK: - ActiveField
+
     func setActiveField(_ field: ExchangeActiveField) {
         guard state.activeField != field else {
             return

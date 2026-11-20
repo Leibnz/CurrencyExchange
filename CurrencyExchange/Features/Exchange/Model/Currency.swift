@@ -12,7 +12,9 @@ struct Currency: Identifiable, Equatable {
     let name: String
     let flag: String
 
-    var id: String { code }
+    var id: String {
+        code
+    }
 }
 
 extension Currency {
@@ -30,7 +32,6 @@ extension Currency {
 }
 
 extension Currency {
-
     static let ars = Currency(
         code: "ARS",
         name: "Argentine Peso",
@@ -42,6 +43,6 @@ extension Currency {
     static let supported: [Currency] = [
         .usdc,
         .mxn,
-        .ars
+        .ars,
     ]
 }
