@@ -1,0 +1,16 @@
+//
+//  Untitled.swift
+//  CurrencyExchange
+//
+//  Created by Andrew on 17.11.2026.
+//
+
+"exchange.error.load_rate" = "Unable to update exchange rate. Please try again.";
+"exchange.error.select_currency" = "Unable to select currency. Please try again.";
+"exchange.error.swap_currencies" = "Unable to swap currencies. Please try again.";
+"exchange.rate.not_loaded" = "Rate not loaded";
+"exchange.rate.loading" = "Loading…";
+"exchange.rate.live" = "Live rate";
+"exchange.rate.cached" = "Cached rate";
+"exchange.rate.fallback" = "Offline rate · May be outdated";
+"exchange.rate.identity" = "Same currency";

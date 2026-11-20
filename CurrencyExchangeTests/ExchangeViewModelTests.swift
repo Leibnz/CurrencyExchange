@@ -10,17 +10,24 @@ import XCTest
 
 @MainActor
 final class ExchangeViewModelTests: XCTestCase {
-    
-    func testUpdateSourceAmount() {
+
+    func testUpdateSourceAmount() async throws {
         // Arrange
         let repository = MockExchangeRatesRepository()
-        
-        let viewModel = ExchangeViewModel(repository: repository)
-        
+        repository.rateValue = 20
+
+        let viewModel = ExchangeViewModel(
+            repository: repository
+        )
+
+        await viewModel.loadRate()
+
         // Act
         viewModel.updateAmount("100", from: .source)
-        
+
         // Assert
+        let rate = try XCTUnwrap(viewModel.state.exchangeRate)
+
         XCTAssertEqual(
             viewModel.state.inputAmount,
             Decimal(100)
@@ -28,8 +35,7 @@ final class ExchangeViewModelTests: XCTestCase {
 
         XCTAssertEqual(
             viewModel.state.convertedAmount,
-            Decimal(100) *
-                viewModel.state.exchangeRate.value
+            Decimal(100) * rate.value
         )
 
         XCTAssertEqual(
@@ -37,8 +43,8 @@ final class ExchangeViewModelTests: XCTestCase {
             .source
         )
     }
-    
-    func testSelectCurrencySuccess() async {
+
+    func testSelectCurrencySuccess() async throws {
         // Arrange
         let repository = MockExchangeRatesRepository()
         repository.rateValue = 25
@@ -64,8 +70,10 @@ final class ExchangeViewModelTests: XCTestCase {
             .ars
         )
 
+        let rate = try XCTUnwrap(viewModel.state.exchangeRate)
+        
         XCTAssertEqual(
-            viewModel.state.exchangeRate.value,
+            rate.value,
             Decimal(25)
         )
 
@@ -81,7 +89,7 @@ final class ExchangeViewModelTests: XCTestCase {
 
         XCTAssertEqual(repository.requestCount, 1)
     }
-    
+
     func testSelectCurrencyFailureKeepsPreviousState() async {
         // Arrange
         let repository = MockExchangeRatesRepository()
@@ -124,10 +132,10 @@ final class ExchangeViewModelTests: XCTestCase {
             viewModel.state.loadingState,
             .idle
         )
-        
+
         XCTAssertNotNil(viewModel.state.errorMessage)
     }
-    
+
     func testLoadingStateDuringCurrencySelection() async {
         // Arrange
         let repository = SuspendedExchangeRatesRepository()
@@ -168,7 +176,7 @@ final class ExchangeViewModelTests: XCTestCase {
             .idle
         )
     }
-    
+
     func testAmountChangedDuringLoadingIsPreserved() async {
         // Arrange
         let repository = SuspendedExchangeRatesRepository()
@@ -209,8 +217,8 @@ final class ExchangeViewModelTests: XCTestCase {
             Decimal(5000)
         )
     }
-    
-    func testFallbackRateSource() async {
+
+    func testFallbackRateSource() async throws {
         // Arrange
         let repository = MockExchangeRatesRepository()
 
@@ -225,8 +233,10 @@ final class ExchangeViewModelTests: XCTestCase {
         await viewModel.loadRate()
 
         // Assert
+        let rate = try XCTUnwrap(viewModel.state.exchangeRate)
+        
         XCTAssertEqual(
-            viewModel.state.exchangeRate.value,
+            rate.value,
             Decimal(18)
         )
 
@@ -235,50 +245,87 @@ final class ExchangeViewModelTests: XCTestCase {
             .fallback
         )
     }
-    
-    func testSwapCurrenciesWithSourceActivePreservesPreviousTargetAmount() async {
+
+    func testSwapCurrenciesWithSourceActivePreservesPreviousTargetAmount() async throws {
         // Arrange
         let repository = MockExchangeRatesRepository()
-        repository.rateValue = 0.05
+        repository.rateValue = 20
+
         let viewModel = ExchangeViewModel(repository: repository)
+
+        await viewModel.loadRate()
         viewModel.updateAmount("100", from: .source)
+
         let previousTargetAmount = viewModel.state.convertedAmount
+
+        // Reverse rate
+        repository.rateValue = Decimal(string: "0.05")!
 
         // Act
         await viewModel.swapCurrencies()
 
         // Assert
+        let rate = try XCTUnwrap(viewModel.state.exchangeRate)
+
         XCTAssertEqual(viewModel.state.selectedFromCurrency, .mxn)
         XCTAssertEqual(viewModel.state.selectedToCurrency, .usdc)
         XCTAssertEqual(viewModel.state.activeField, .source)
-        XCTAssertEqual(viewModel.state.inputAmount, previousTargetAmount)
-        XCTAssertEqual(viewModel.state.convertedAmount, previousTargetAmount * Decimal(string: "0.05")!)
-        XCTAssertEqual(viewModel.state.exchangeRate.value, Decimal(string: "0.05")!)
+
+        XCTAssertEqual(
+            viewModel.state.inputAmount,
+            previousTargetAmount
+        )
+
+        XCTAssertEqual(
+            viewModel.state.convertedAmount,
+            previousTargetAmount * rate.value
+        )
+
+        XCTAssertEqual(rate.value, Decimal(string: "0.05")!)
         XCTAssertEqual(viewModel.state.loadingState, .idle)
         XCTAssertNil(viewModel.state.errorMessage)
-        XCTAssertEqual(repository.requestCount, 1)
+
+        XCTAssertEqual(repository.requestCount, 2)
     }
-    
-    func testSwapCurrenciesWithTargetActivePreservesPreviousSourceAmount() async {
+
+    func testSwapCurrenciesWithTargetActivePreservesPreviousSourceAmount() async throws {
         // Arrange
         let repository = MockExchangeRatesRepository()
-        repository.rateValue = 0.05
+        repository.rateValue = 20
+
         let viewModel = ExchangeViewModel(repository: repository)
+
+        await viewModel.loadRate()
         viewModel.updateAmount("184", from: .target)
+
         let previousSourceAmount = viewModel.state.inputAmount
+
+        repository.rateValue = Decimal(string: "0.05")!
 
         // Act
         await viewModel.swapCurrencies()
 
         // Assert
+        let rate = try XCTUnwrap(viewModel.state.exchangeRate)
+
         XCTAssertEqual(viewModel.state.selectedFromCurrency, .mxn)
         XCTAssertEqual(viewModel.state.selectedToCurrency, .usdc)
         XCTAssertEqual(viewModel.state.activeField, .target)
-        XCTAssertEqual(viewModel.state.convertedAmount, previousSourceAmount)
-        XCTAssertEqual(viewModel.state.inputAmount, previousSourceAmount / Decimal(string: "0.05")!)
-        XCTAssertEqual(viewModel.state.exchangeRate.value, Decimal(string: "0.05")!)
+
+        XCTAssertEqual(
+            viewModel.state.convertedAmount,
+            previousSourceAmount
+        )
+
+        XCTAssertEqual(
+            viewModel.state.inputAmount,
+            previousSourceAmount / rate.value
+        )
+
+        XCTAssertEqual(rate.value, Decimal(string: "0.05")!)
         XCTAssertEqual(viewModel.state.loadingState, .idle)
         XCTAssertNil(viewModel.state.errorMessage)
-        XCTAssertEqual(repository.requestCount, 1)
+
+        XCTAssertEqual(repository.requestCount, 2)
     }
 }

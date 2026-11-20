@@ -8,9 +8,8 @@
 import UIKit
 
 final class CurrencyCardView: UIView {
-    
     var onCurrencyTap: (() -> Void)?
-    
+
     var isCurrencySelectionEnabled: Bool {
         get {
             currencyButton.isEnabled
@@ -20,19 +19,19 @@ final class CurrencyCardView: UIView {
             currencyButton.alpha = newValue ? 1 : 0.5
         }
     }
-    
+
     private let flagLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16)
         return label
     }()
-    
+
     private let currencyLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 12, weight: .medium)
         return label
     }()
-    
+
     private let chevronImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(systemName: "chevron.down")
@@ -40,7 +39,7 @@ final class CurrencyCardView: UIView {
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
-    
+
     let amountTextField: UITextField = {
         let textField = UITextField()
         textField.font = .systemFont(ofSize: 16, weight: .semibold)
@@ -50,7 +49,7 @@ final class CurrencyCardView: UIView {
         textField.isUserInteractionEnabled = true
         return textField
     }()
-    
+
     private let currencyStack: UIStackView = {
         let stackView = UIStackView()
         stackView.axis = .horizontal
@@ -58,53 +57,54 @@ final class CurrencyCardView: UIView {
         stackView.spacing = 5
         return stackView
     }()
-    
+
     private let currencyButton: UIButton = {
         let button = UIButton(type: .system)
         button.accessibilityLabel = "Select currency"
         return button
     }()
-    
+
     init(flag: String, currency: String, isEditable: Bool) {
         super.init(frame: .zero)
-        
+
         flagLabel.text = flag
         currencyLabel.text = currency
         amountTextField.isEnabled = isEditable
-        
+
         configureUI()
         setupConstraints()
     }
-    
-    required init?(coder: NSCoder) {
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     func configure(currency: Currency, amount: String) {
         flagLabel.text = currency.flag
         currencyLabel.text = currency.code
-        
+
         if amountTextField.text != amount {
             amountTextField.text = amount
         }
     }
-    
+
     private func configureUI() {
-        self.backgroundColor = .white
-        self.layer.cornerRadius = 13
-        self.clipsToBounds = true
-        
+        backgroundColor = .white
+        layer.cornerRadius = 13
+        clipsToBounds = true
+
         currencyStack.addArrangedSubview(flagLabel)
         currencyStack.addArrangedSubview(currencyLabel)
         currencyStack.addArrangedSubview(chevronImageView)
-        
+
         currencyStack.isUserInteractionEnabled = false
-        
+
         currencyButton.addSubview(currencyStack)
-        
-        self.addSubview(currencyButton)
-        self.addSubview(amountTextField)
-        
+
+        addSubview(currencyButton)
+        addSubview(amountTextField)
+
         currencyButton.addTarget(self, action: #selector(currencyButtonTapped), for: .touchUpInside)
     }
 
@@ -112,7 +112,7 @@ final class CurrencyCardView: UIView {
         currencyButton.translatesAutoresizingMaskIntoConstraints = false
         currencyStack.translatesAutoresizingMaskIntoConstraints = false
         amountTextField.translatesAutoresizingMaskIntoConstraints = false
-        
+
         NSLayoutConstraint.activate([
             // MARK: - Currency Button
 
@@ -163,10 +163,10 @@ final class CurrencyCardView: UIView {
 
             amountTextField.widthAnchor.constraint(
                 greaterThanOrEqualToConstant: 75
-            )
+            ),
         ])
     }
-    
+
     @objc private func currencyButtonTapped() {
         onCurrencyTap?()
     }
