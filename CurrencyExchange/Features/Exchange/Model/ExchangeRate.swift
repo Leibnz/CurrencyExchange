@@ -11,7 +11,7 @@ struct ExchangeRate: Equatable {
     let fromCurrency: Currency
     let toCurrency: Currency
     let value: Decimal
-    
+
     func convert(_ amount: Decimal) -> Decimal {
         return amount * value
     }

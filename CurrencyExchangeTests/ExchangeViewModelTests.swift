@@ -10,16 +10,16 @@ import XCTest
 
 @MainActor
 final class ExchangeViewModelTests: XCTestCase {
-    
+
     func testUpdateSourceAmount() {
         // Arrange
         let repository = MockExchangeRatesRepository()
-        
+
         let viewModel = ExchangeViewModel(repository: repository)
-        
+
         // Act
         viewModel.updateAmount("100", from: .source)
-        
+
         // Assert
         XCTAssertEqual(
             viewModel.state.inputAmount,
@@ -37,7 +37,7 @@ final class ExchangeViewModelTests: XCTestCase {
             .source
         )
     }
-    
+
     func testSelectCurrencySuccess() async {
         // Arrange
         let repository = MockExchangeRatesRepository()
@@ -81,7 +81,7 @@ final class ExchangeViewModelTests: XCTestCase {
 
         XCTAssertEqual(repository.requestCount, 1)
     }
-    
+
     func testSelectCurrencyFailureKeepsPreviousState() async {
         // Arrange
         let repository = MockExchangeRatesRepository()
@@ -124,10 +124,10 @@ final class ExchangeViewModelTests: XCTestCase {
             viewModel.state.loadingState,
             .idle
         )
-        
+
         XCTAssertNotNil(viewModel.state.errorMessage)
     }
-    
+
     func testLoadingStateDuringCurrencySelection() async {
         // Arrange
         let repository = SuspendedExchangeRatesRepository()
@@ -168,7 +168,7 @@ final class ExchangeViewModelTests: XCTestCase {
             .idle
         )
     }
-    
+
     func testAmountChangedDuringLoadingIsPreserved() async {
         // Arrange
         let repository = SuspendedExchangeRatesRepository()
@@ -209,7 +209,7 @@ final class ExchangeViewModelTests: XCTestCase {
             Decimal(5000)
         )
     }
-    
+
     func testFallbackRateSource() async {
         // Arrange
         let repository = MockExchangeRatesRepository()
@@ -235,7 +235,7 @@ final class ExchangeViewModelTests: XCTestCase {
             .fallback
         )
     }
-    
+
     func testSwapCurrenciesWithSourceActivePreservesPreviousTargetAmount() async {
         // Arrange
         let repository = MockExchangeRatesRepository()
@@ -258,7 +258,7 @@ final class ExchangeViewModelTests: XCTestCase {
         XCTAssertNil(viewModel.state.errorMessage)
         XCTAssertEqual(repository.requestCount, 1)
     }
-    
+
     func testSwapCurrenciesWithTargetActivePreservesPreviousSourceAmount() async {
         // Arrange
         let repository = MockExchangeRatesRepository()

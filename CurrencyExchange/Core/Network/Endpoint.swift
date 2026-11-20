@@ -14,25 +14,25 @@ enum EndpointError: Error {
 struct Endpoint {
     let path: String
     let queryItems: [URLQueryItem]
-    
+
     init(path: String, queryItems: [URLQueryItem] = []) {
         self.path = path
         self.queryItems = queryItems
     }
-    
+
     func url(baseURL: URL) throws -> URL {
         let endpointURL = baseURL.appendingPathComponent(path)
-        
+
         guard var components = URLComponents(url: endpointURL, resolvingAgainstBaseURL: false) else {
             throw EndpointError.invalidURL
         }
-        
+
         components.queryItems = queryItems.isEmpty ? nil : queryItems
-        
+
         guard let url = components.url else {
             throw EndpointError.invalidURL
         }
-        
+
         return url
     }
 }

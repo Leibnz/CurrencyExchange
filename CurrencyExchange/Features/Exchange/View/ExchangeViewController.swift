@@ -8,27 +8,27 @@
 import UIKit
 
 final class ExchangeViewController: UIViewController {
-    
+
     private let viewModel: ExchangeViewModel
     private var previousCurrencies: (from: Currency, to: Currency)?
     private var rateTask: Task<Void, Never>?
-    
+
     init(viewModel: ExchangeViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     private let loadingIndicator: UIActivityIndicatorView = {
         let indicator = UIActivityIndicatorView(style: .medium)
         indicator.color = .systemGreen
         indicator.hidesWhenStopped = true
         return indicator
     }()
-    
+
     private let statusLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 12)
@@ -37,7 +37,7 @@ final class ExchangeViewController: UIViewController {
         label.isHidden = true
         return label
     }()
-    
+
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.text = "Exchange calculator"
@@ -45,7 +45,7 @@ final class ExchangeViewController: UIViewController {
         label.textAlignment = .left
         return label
     }()
-    
+
     private let rateLabel: UILabel = {
         let label = UILabel()
         label.text = "Rate not loaded"
@@ -53,19 +53,19 @@ final class ExchangeViewController: UIViewController {
         label.textColor = .systemGreen
         return label
     }()
-    
+
     private let sourceCard = CurrencyCardView(
         flag: "🇺🇸",
         currency: "USDc",
         isEditable: true
     )
-    
+
     private let targetCard = CurrencyCardView(
         flag: "🇲🇽",
         currency: "MXN",
         isEditable: true
     )
-    
+
     private let swapButton: UIButton = {
         let button = UIButton(type: .system)
         button.backgroundColor = .systemGreen
@@ -81,17 +81,17 @@ final class ExchangeViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         configureUI()
         setupConstraints()
         setupActions()
         bindViewModel()
-        
+
         startRateTask { viewModel in
             await viewModel.loadRate()
         }
     }
-    
+
     private func renderLoadingState(_ state: ExchangeViewState) {
         let isLoading = state.loadingState == .loading
 
@@ -105,7 +105,7 @@ final class ExchangeViewController: UIViewController {
         sourceCard.isCurrencySelectionEnabled = true
         targetCard.isCurrencySelectionEnabled = true
     }
-    
+
     private func renderRateStatus(_ state: ExchangeViewState) {
         statusLabel.text = state.errorMessage ?? state.rateSourceDescription
         statusLabel.isHidden = false
@@ -133,7 +133,7 @@ final class ExchangeViewController: UIViewController {
     deinit {
         rateTask?.cancel()
     }
-    
+
     private func presentCurrencySelection(for field: CurrencySelectionField) {
         let selectedCurrency: Currency
 
@@ -168,23 +168,23 @@ final class ExchangeViewController: UIViewController {
 
         present(controller, animated: true)
     }
-    
+
     private func bindViewModel() {
         viewModel.onStateChange = { [weak self] state in
             self?.render(state: state)
         }
-        
+
         render(state: viewModel.state)
     }
-    
+
     private func render(state: ExchangeViewState) {
         rateLabel.text = state.rateDescription
-        
+
         renderLoadingState(state)
         renderRateStatus(state)
-        
+
         let currenciesChanged: Bool
-        
+
         if let previousCurrencies {
             currenciesChanged =
                 previousCurrencies.from != state.selectedFromCurrency ||
@@ -192,29 +192,29 @@ final class ExchangeViewController: UIViewController {
         } else {
             currenciesChanged = true
         }
-        
+
         previousCurrencies = (
             from: state.selectedFromCurrency,
             to: state.selectedToCurrency
         )
-        
+
         let sourceAmount = format(state.inputAmount)
         let targetAmount = format(state.convertedAmount)
-        
+
         let shouldUpdateSource = currenciesChanged || !sourceCard.amountTextField.isFirstResponder
         let shouldUpdateTarget = currenciesChanged || !targetCard.amountTextField.isFirstResponder
-        
+
         sourceCard.configure(
             currency: state.selectedFromCurrency,
             amount: shouldUpdateSource ? sourceAmount : sourceCard.amountTextField.text ?? ""
         )
-        
+
         targetCard.configure(
             currency: state.selectedToCurrency,
             amount: shouldUpdateTarget ? targetAmount : targetCard.amountTextField.text ?? ""
         )
     }
-    
+
     private func format(_ amount: Decimal) -> String {
         amount.formatted(
             .number
@@ -222,7 +222,7 @@ final class ExchangeViewController: UIViewController {
                 .precision(.fractionLength(4))
         )
     }
-    
+
     private func configureUI() {
         view.backgroundColor = UIColor(
             red: 0.97,
@@ -230,9 +230,9 @@ final class ExchangeViewController: UIViewController {
             blue: 0.97,
             alpha: 1
         )
-        
+
         swapButton.layer.borderColor = view.backgroundColor?.cgColor
-        
+
         [
             loadingIndicator,
             statusLabel,
@@ -246,7 +246,7 @@ final class ExchangeViewController: UIViewController {
             view.addSubview($0)
         }
     }
-    
+
     private func setupConstraints() {
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(
@@ -296,7 +296,7 @@ final class ExchangeViewController: UIViewController {
                 constant: -16
             ),
             sourceCard.heightAnchor.constraint(equalToConstant: 66),
-            
+
             targetCard.topAnchor.constraint(
                 equalTo: sourceCard.bottomAnchor,
                 constant: 16
@@ -308,7 +308,7 @@ final class ExchangeViewController: UIViewController {
                 equalTo: sourceCard.trailingAnchor
             ),
             targetCard.heightAnchor.constraint(equalToConstant: 66),
-            
+
             swapButton.centerXAnchor.constraint(
                 equalTo: sourceCard.centerXAnchor
             ),
@@ -320,73 +320,73 @@ final class ExchangeViewController: UIViewController {
             swapButton.heightAnchor.constraint(equalToConstant: 24)
         ])
     }
-    
+
     private func setupActions() {
-        
+
         sourceCard.amountTextField.delegate = self
         targetCard.amountTextField.delegate = self
-        
+
         sourceCard.amountTextField.addTarget(
             self,
             action: #selector(sourceAmountChanged),
             for: .editingChanged
         )
-        
+
         targetCard.amountTextField.addTarget(
             self,
             action: #selector(targetAmountChanged),
             for: .editingChanged
         )
-        
+
         targetCard.amountTextField.addTarget(
             self,
             action: #selector(targetEditingBegan),
             for: .editingDidBegin
         )
-        
+
         sourceCard.amountTextField.addTarget(
             self,
             action: #selector(sourceEditingBegan),
             for: .editingDidBegin
         )
-        
+
         swapButton.addTarget(
             self,
             action: #selector(swapCurrencies),
             for: .touchUpInside
         )
-        
+
         sourceCard.onCurrencyTap = { [weak self] in
             self?.presentCurrencySelection(for: .source)
         }
-        
+
         targetCard.onCurrencyTap = { [weak self] in
             self?.presentCurrencySelection(for: .target)
         }
     }
-    
+
     @objc private func sourceEditingBegan() {
         viewModel.setActiveField(.source)
     }
-    
+
     @objc private func targetEditingBegan() {
         viewModel.setActiveField(.target)
     }
-    
+
     @objc private func sourceAmountChanged() {
         viewModel.updateAmount(
             sourceCard.amountTextField.text ?? "",
             from: .source
         )
     }
-    
+
     @objc private func targetAmountChanged() {
         viewModel.updateAmount(
             targetCard.amountTextField.text ?? "",
             from: .target
         )
     }
-    
+
     @objc private func swapCurrencies() {
         startRateTask { viewModel in
             await viewModel.swapCurrencies()
@@ -395,13 +395,17 @@ final class ExchangeViewController: UIViewController {
 }
 
 extension ExchangeViewController: UITextFieldDelegate {
-    
-    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        
+
+    func textField(
+        _ textField: UITextField,
+        shouldChangeCharactersIn range: NSRange,
+        replacementString string: String
+    ) -> Bool {
+
         guard let currentText = textField.text,
               let swiftRange = Range(range, in: currentText)
                 else { return false }
-        
+
         let newText = currentText.replacingCharacters(in: swiftRange, with: string)
 
         return AmountInputValidator.isValid(newText)

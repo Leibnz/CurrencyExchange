@@ -27,17 +27,17 @@ enum ExchangeRateSource: Equatable {
 struct ExchangeViewState: Equatable {
     var activeField: ExchangeActiveField = .source
     var loadingState: ExchangeLoadingState = .idle
-    var rateSource: ExchangeRateSource? = nil
+    var rateSource: ExchangeRateSource?
     var errorMessage: String?
-    
+
     var selectedFromCurrency: Currency
     var selectedToCurrency: Currency
-    
+
     var inputAmount: Decimal
     var convertedAmount: Decimal
-    
+
     var exchangeRate: ExchangeRate?
-    
+
     var rateDescription: String {
         guard let exchangeRate else {
             return L10n.Rate.notLoaded
@@ -49,7 +49,7 @@ struct ExchangeViewState: Equatable {
 
         return "1 \(selectedFromCurrency.code) = \(formattedRate) \(selectedToCurrency.code)"
     }
-    
+
     var rateSourceDescription: String {
         if loadingState == .loading {
             return L10n.Rate.loading
@@ -72,7 +72,7 @@ struct ExchangeViewState: Equatable {
             return L10n.Rate.notLoaded
         }
     }
-    
+
     static let initial = ExchangeViewState(
         selectedFromCurrency: .usdc,
         selectedToCurrency: .mxn,

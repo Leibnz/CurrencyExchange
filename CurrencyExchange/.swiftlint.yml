@@ -32,5 +32,5 @@ function_body_length:
   error: 80
 
 identifier_name:
-  min_length: 2
+  min_length: 1
   max_length: 50

@@ -7,8 +7,6 @@
 
 import UIKit
 
-import UIKit
-
 final class CurrencySelectionViewController: UIViewController {
 
     var onCurrencySelected: ((Currency) -> Void)?

@@ -11,7 +11,7 @@ struct Currency: Identifiable, Equatable {
     let code: String
     let name: String
     let flag: String
-    
+
     var id: String { code }
 }
 
@@ -21,7 +21,7 @@ extension Currency {
         name: "US Dollar",
         flag: "🇺🇸"
     )
-    
+
     static let mxn = Currency(
         code: "MXN",
         name: "Mexican Peso",
@@ -30,13 +30,13 @@ extension Currency {
 }
 
 extension Currency {
-    
+
     static let ars = Currency(
         code: "ARS",
         name: "Argentine Peso",
         flag: "🇦🇷"
     )
-    
+
     // TODO: Replace with /tickers-currencies API
     // when the endpoint becomes available.
     static let supported: [Currency] = [

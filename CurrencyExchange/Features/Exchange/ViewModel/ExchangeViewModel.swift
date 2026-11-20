@@ -9,29 +9,29 @@ import Foundation
 
 @MainActor
 final class ExchangeViewModel {
-    
+
     private let repository: ExchangeRatesRepository
-    
+
     private var currencyRequestID = 0
-    
+
     private(set) var state: ExchangeViewState = .initial {
         didSet {
             onStateChange?(state)
         }
     }
-    
+
     var onStateChange: ((ExchangeViewState) -> Void)?
-    
+
     init(repository: ExchangeRatesRepository) {
         self.repository = repository
     }
-    
+
     private func setLoading(_ isLoading: Bool) {
         var updatedState = state
         updatedState.loadingState = isLoading ? .loading : .idle
         state = updatedState
     }
-    
+
     private func applyRate(_ rate: ExchangeRate, to state: inout ExchangeViewState) {
         state.exchangeRate = rate
 
@@ -43,14 +43,14 @@ final class ExchangeViewModel {
             state.inputAmount = state.convertedAmount / rate.value
         }
     }
-    
+
     func loadRate() async {
         guard !Task.isCancelled else { return }
-        
+
         currencyRequestID += 1
         let requestID = currencyRequestID
         setLoading(true)
-        
+
         defer {
             if requestID == currencyRequestID {
                 setLoading(false)
@@ -79,7 +79,7 @@ final class ExchangeViewModel {
             }
 
             var updatedState = state
-            
+
             applyRate(rate, to: &updatedState)
 
             updatedState.rateSource = result.source
@@ -99,9 +99,9 @@ final class ExchangeViewModel {
             state = updatedState
         }
     }
-    
+
     func selectCurrency(_ currency: Currency, for field: CurrencySelectionField) async {
-        
+
         guard !Task.isCancelled else { return }
 
         currencyRequestID += 1
@@ -113,42 +113,42 @@ final class ExchangeViewModel {
                 setLoading(false)
             }
         }
-        
+
         var newFrom = state.selectedFromCurrency
         var newTo = state.selectedToCurrency
-        
+
         switch field {
         case .source:
             newFrom = currency
-        
+
         case .target:
             newTo = currency
         }
-        
+
         guard newFrom != state.selectedFromCurrency || newTo != state.selectedToCurrency else { return }
-        
+
         do {
             let result = try await repository.getRate(from: newFrom, to: newTo)
-            
+
             guard !Task.isCancelled else { return }
             let rate = result.rate
-            
+
             guard requestID == currencyRequestID,
                   rate.value > 0,
                   rate.fromCurrency == newFrom,
                   rate.toCurrency == newTo
                     else { return }
-            
+
             var updatedState = state
 
             updatedState.selectedFromCurrency = newFrom
             updatedState.selectedToCurrency = newTo
-            
+
             applyRate(rate, to: &updatedState)
- 
+
             updatedState.rateSource = result.source
             updatedState.errorMessage = nil
-            
+
             state = updatedState
         } catch {
             guard !Task.isCancelled, !(error is CancellationError), requestID == currencyRequestID else {
@@ -162,9 +162,9 @@ final class ExchangeViewModel {
             state = updatedState
         }
     }
-    
+
     // MARK: - Update Amount
-    
+
     func updateAmount(_ text: String, from field: ExchangeActiveField) {
         guard let amount = AmountInputValidator.parse(text) else {
             return
@@ -180,18 +180,18 @@ final class ExchangeViewModel {
         case .target:
             updatedState.convertedAmount = amount
         }
-        
+
         if let rate = updatedState.exchangeRate, rate.value > 0 {
             applyRate(rate, to: &updatedState)
         }
 
         state = updatedState
     }
-    
+
     // MARK: - Swap Currencies
-    
+
     func swapCurrencies() async {
-        
+
         guard !Task.isCancelled else { return }
 
         currencyRequestID += 1
@@ -203,7 +203,7 @@ final class ExchangeViewModel {
                 setLoading(false)
             }
         }
-        
+
         let newFrom = state.selectedToCurrency
         let newTo = state.selectedFromCurrency
 
@@ -212,7 +212,7 @@ final class ExchangeViewModel {
                 from: newFrom,
                 to: newTo
             )
-            
+
             guard !Task.isCancelled else { return }
             let rate = result.rate
 
@@ -256,13 +256,13 @@ final class ExchangeViewModel {
             state = updatedState
         }
     }
-    
+
     // MARK: - ActiveField
     func setActiveField(_ field: ExchangeActiveField) {
         guard state.activeField != field else {
             return
         }
-        
+
         var updatedState = state
         updatedState.activeField = field
         state = updatedState

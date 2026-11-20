@@ -13,7 +13,7 @@ final class MockNetworkClient: NetworkClient {
         case success([TickerDTO])
         case failure(Error)
     }
-    
+
     var responses: [Response] = []
     private(set) var requestCount = 0
 
