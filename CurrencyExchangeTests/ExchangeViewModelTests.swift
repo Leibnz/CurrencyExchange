@@ -71,7 +71,6 @@ final class ExchangeViewModelTests: XCTestCase {
         )
 
         let rate = try XCTUnwrap(viewModel.state.exchangeRate)
-        
         XCTAssertEqual(
             rate.value,
             Decimal(25)
@@ -234,7 +233,6 @@ final class ExchangeViewModelTests: XCTestCase {
 
         // Assert
         let rate = try XCTUnwrap(viewModel.state.exchangeRate)
-        
         XCTAssertEqual(
             rate.value,
             Decimal(18)

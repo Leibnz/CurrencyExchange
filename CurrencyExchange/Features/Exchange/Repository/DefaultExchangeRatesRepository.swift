@@ -89,8 +89,7 @@ final class DefaultExchangeRatesRepository: ExchangeRatesRepository {
         } catch {
             try Task.checkCancellation()
             if error is CancellationError ||
-                (error as? URLError)?.code == .cancelled
-            {
+                (error as? URLError)?.code == .cancelled {
                 throw CancellationError()
             }
             logger.warning("Ticker request failed: \(String(describing: error), privacy: .public)")
