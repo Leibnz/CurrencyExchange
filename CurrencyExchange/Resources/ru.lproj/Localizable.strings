@@ -14,3 +14,9 @@
 "exchange.rate.cached" = "Сохранённый курс";
 "exchange.rate.fallback" = "Резервный курс · Может быть устаревшим";
 "exchange.rate.identity" = "Одинаковые валюты";
+"currency_card.select_currency" = "Выбрать валюту, %@";
+"currency_card.select_currency_hint" = "Открывает список выбора валюты.";
+
+"currency_card.amount" = "Сумма в %@";
+"currency_card.amount_editable_hint" = "Введите сумму для конвертации.";
+"currency_card.amount_read_only_hint" = "Результат конвертации.";
