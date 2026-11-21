@@ -235,7 +235,7 @@ final class ExchangeViewController: UIViewController {
             rateLabel,
             sourceCard,
             targetCard,
-            swapButton,
+            swapButton
         ].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview($0)

@@ -43,6 +43,6 @@ extension Currency {
     static let supported: [Currency] = [
         .usdc,
         .mxn,
-        .ars,
+        .ars
     ]
 }
