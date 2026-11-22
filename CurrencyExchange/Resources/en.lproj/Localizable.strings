@@ -14,3 +14,9 @@
 "exchange.rate.cached" = "Cached rate";
 "exchange.rate.fallback" = "Offline rate · May be outdated";
 "exchange.rate.identity" = "Same currency";
+"currency_card.select_currency" = "Select currency, %@";
+"currency_card.select_currency_hint" = "Opens the currency selection list.";
+
+"currency_card.amount" = "Amount in %@";
+"currency_card.amount_editable_hint" = "Enter the amount to convert.";
+"currency_card.amount_read_only_hint" = "Converted amount.";

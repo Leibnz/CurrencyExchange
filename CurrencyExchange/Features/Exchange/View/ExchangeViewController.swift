@@ -76,6 +76,17 @@ final class ExchangeViewController: UIViewController {
             for: .normal
         )
         button.layer.borderWidth = 2
+        
+        button.accessibilityLabel = NSLocalizedString(
+            "exchange.swap_currencies",
+            comment: "VoiceOver label for swapping currencies"
+        )
+
+        button.accessibilityHint = NSLocalizedString(
+            "exchange.swap_currencies_hint",
+            comment: "VoiceOver hint for swapping currencies"
+        )
+        
         return button
     }()
 
@@ -290,7 +301,8 @@ final class ExchangeViewController: UIViewController {
                 equalTo: view.trailingAnchor,
                 constant: -16
             ),
-            sourceCard.heightAnchor.constraint(equalToConstant: 66),
+            sourceCard.heightAnchor.constraint(
+                greaterThanOrEqualToConstant: 66),
 
             targetCard.topAnchor.constraint(
                 equalTo: sourceCard.bottomAnchor,
@@ -302,7 +314,8 @@ final class ExchangeViewController: UIViewController {
             targetCard.trailingAnchor.constraint(
                 equalTo: sourceCard.trailingAnchor
             ),
-            targetCard.heightAnchor.constraint(equalToConstant: 66),
+            targetCard.heightAnchor.constraint(
+                greaterThanOrEqualToConstant: 66),
 
             swapButton.centerXAnchor.constraint(
                 equalTo: sourceCard.centerXAnchor

@@ -22,13 +22,23 @@ final class CurrencyCardView: UIView {
 
     private let flagLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 16)
+        label.font = .preferredFont(forTextStyle: .title3)
+        label.adjustsFontForContentSizeCategory = true
+        label.isAccessibilityElement = false
         return label
     }()
 
     private let currencyLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 12, weight: .medium)
+
+        label.font = UIFontMetrics(forTextStyle: .subheadline)
+            .scaledFont(
+                for: .systemFont(ofSize: 12, weight: .medium)
+            )
+
+        label.adjustsFontForContentSizeCategory = true
+        label.isAccessibilityElement = false
+
         return label
     }()
 
@@ -42,11 +52,16 @@ final class CurrencyCardView: UIView {
 
     let amountTextField: UITextField = {
         let textField = UITextField()
-        textField.font = .systemFont(ofSize: 16, weight: .semibold)
+
+        textField.font = UIFontMetrics(forTextStyle: .body)
+            .scaledFont(
+                for: .systemFont(ofSize: 16, weight: .semibold)
+            )
+
+        textField.adjustsFontForContentSizeCategory = true
         textField.textAlignment = .right
         textField.keyboardType = .decimalPad
-        textField.isEnabled = true
-        textField.isUserInteractionEnabled = true
+
         return textField
     }()
 
@@ -73,6 +88,7 @@ final class CurrencyCardView: UIView {
 
         configureUI()
         setupConstraints()
+        updateAccessibility(currencyCode: currency)
     }
 
     @available(*, unavailable)
@@ -87,6 +103,7 @@ final class CurrencyCardView: UIView {
         if amountTextField.text != amount {
             amountTextField.text = amount
         }
+        updateAccessibility(currencyCode: currency.code)
     }
 
     private func configureUI() {
@@ -106,6 +123,15 @@ final class CurrencyCardView: UIView {
         addSubview(amountTextField)
 
         currencyButton.addTarget(self, action: #selector(currencyButtonTapped), for: .touchUpInside)
+        currencyStack.isAccessibilityElement = false
+        flagLabel.isAccessibilityElement = false
+        currencyLabel.isAccessibilityElement = false
+        chevronImageView.isAccessibilityElement = false
+
+        currencyButton.isAccessibilityElement = true
+        currencyButton.accessibilityTraits = .button
+
+        amountTextField.isAccessibilityElement = true
     }
 
     private func setupConstraints() {
@@ -115,7 +141,17 @@ final class CurrencyCardView: UIView {
 
         NSLayoutConstraint.activate([
             // MARK: - Currency Button
+            
+            currencyButton.topAnchor.constraint(
+                greaterThanOrEqualTo: topAnchor,
+                constant: 8
+            ),
 
+            currencyButton.bottomAnchor.constraint(
+                lessThanOrEqualTo: bottomAnchor,
+                constant: -8
+            ),
+            
             currencyButton.leadingAnchor.constraint(
                 equalTo: leadingAnchor,
                 constant: 12
@@ -131,6 +167,16 @@ final class CurrencyCardView: UIView {
 
             // MARK: - Currency Stack
 
+            currencyStack.topAnchor.constraint(
+                greaterThanOrEqualTo: currencyButton.topAnchor,
+                constant: 4
+            ),
+
+            currencyStack.bottomAnchor.constraint(
+                lessThanOrEqualTo: currencyButton.bottomAnchor,
+                constant: -4
+            ),
+            
             currencyStack.leadingAnchor.constraint(
                 equalTo: currencyButton.leadingAnchor,
                 constant: 8
@@ -146,7 +192,17 @@ final class CurrencyCardView: UIView {
             ),
 
             // MARK: - Amount TextField
+            
+            amountTextField.topAnchor.constraint(
+                greaterThanOrEqualTo: topAnchor,
+                constant: 8
+            ),
 
+            amountTextField.bottomAnchor.constraint(
+                lessThanOrEqualTo: bottomAnchor,
+                constant: -8
+            ),
+            
             amountTextField.leadingAnchor.constraint(
                 greaterThanOrEqualTo: currencyButton.trailingAnchor,
                 constant: 8
@@ -163,10 +219,48 @@ final class CurrencyCardView: UIView {
 
             amountTextField.widthAnchor.constraint(
                 greaterThanOrEqualToConstant: 75
-            ),
+            )
         ])
     }
+    
+    private func updateAccessibility(currencyCode: String) {
+        let selectCurrencyFormat = NSLocalizedString(
+            "currency_card.select_currency",
+            comment: "VoiceOver label for currency selection"
+        )
 
+        currencyButton.accessibilityLabel =
+            String.localizedStringWithFormat(
+                selectCurrencyFormat,
+                currencyCode
+            )
+
+        currencyButton.accessibilityHint = NSLocalizedString(
+            "currency_card.select_currency_hint",
+            comment: "VoiceOver hint for currency selection"
+        )
+
+        let amountFormat = NSLocalizedString(
+            "currency_card.amount",
+            comment: "VoiceOver label for amount field"
+        )
+
+        amountTextField.accessibilityLabel =
+            String.localizedStringWithFormat(
+                amountFormat,
+                currencyCode
+            )
+
+        let hintKey = amountTextField.isEnabled
+            ? "currency_card.amount_editable_hint"
+            : "currency_card.amount_read_only_hint"
+
+        amountTextField.accessibilityHint = NSLocalizedString(
+            hintKey,
+            comment: "VoiceOver hint for amount field"
+        )
+    }
+    
     @objc private func currencyButtonTapped() {
         onCurrencyTap?()
     }
